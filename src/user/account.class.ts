@@ -1,5 +1,9 @@
 import { CreateUserDto } from "./dto/create-user.dto";
+import { SignInUserDto } from "./dto/signIn-user.dto";
+import { tLoginRes } from "./dto/types";
 import * as bcrypt from 'bcrypt'
+import * as jwt from 'jsonwebtoken';
+
 
 export class Account {
     userId: string;
@@ -7,13 +11,12 @@ export class Account {
     hashedPw: string;
     role: string;
     saltRounds = 10;
+    token: string;
 
-    constructor(createUserDto: CreateUserDto) {
-        this.userId = createUserDto.userId;
+    setSignUpinfo(createUserDto: CreateUserDto){
+        this.password = createUserDto.password
         this.role = createUserDto.role;
-    }
-    setPassword(password: string){
-        this.password = password
+        this.userId = createUserDto.userId;
     }
 
     setHashPw(): boolean {
@@ -22,9 +25,35 @@ export class Account {
         return true
     }
 
-    comparePassword(encoded_pw: string): boolean {
-        const salt = bcrypt.genSaltSync(this.saltRounds);
-        const hash = bcrypt.hashSync(encoded_pw, salt);
-        return bcrypt.compareSync(encoded_pw, hash);
+    setSignInInfo(signInUserDto: SignInUserDto){
+        this.password = signInUserDto.password
+        this.userId = signInUserDto.userId;
+    }
+    
+    comparePassword(DbPw: string): boolean {
+        return bcrypt.compareSync(this.password, DbPw);
+    }
+
+    getJwt(): boolean {
+        const token = jwt.sign(
+            {
+                type: 'JWT',
+                id: this.userId,
+            },
+            process.env.SECRET_KEY,
+            {
+                expiresIn: '60m',
+                issuer: 'admin',
+            }
+        );
+        this.token = token
+        return true
+    };
+
+    getResform(): tLoginRes{
+        return {
+            userId: this.password,
+            token: this.token
+        }
     }
 }
