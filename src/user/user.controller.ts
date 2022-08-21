@@ -9,7 +9,7 @@ export class UserController {
     
     @Post('/signup')
     @UsePipes(ValidationPipe)
-    getAllProduct(@Body() createUserDto: CreateUserDto): Promise<User> {
-      return this.userService.signUp(createUserDto);
+    signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
+      return this.userService.createAccount(createUserDto);
     }
 }

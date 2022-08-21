@@ -13,11 +13,18 @@ export class UserService {
         private userRepository: UserRepository,
       ) {}
 
-    async signUp(createUserDto: CreateUserDto): Promise<User | undefined> {
+    async createAccount(createUserDto: CreateUserDto): Promise<User | undefined> {
         const account = new Account(createUserDto);
-        account.setHashPw(account.password)
+        account.setPassword(createUserDto.password)
+        account.setHashPw()
         const newUser = await this.userRepository.createUser(account)
-        console.log(newUser)
     return newUser;
     }
+
+    // async signIn(createUserDto: CreateUserDto): Promise<User | undefined> {
+    //     const account = new Account(createUserDto);
+    //     account.setHashPw(account.password)
+    //     const newUser = await this.userRepository.createUser(account)
+    // return newUser;
+    // }
 }

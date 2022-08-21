@@ -3,20 +3,22 @@ import * as bcrypt from 'bcrypt'
 
 export class Account {
     userId: string;
-    password: string;
+    private password: string;
     hashedPw: string;
     role: string;
     saltRounds = 10;
 
     constructor(createUserDto: CreateUserDto) {
         this.userId = createUserDto.userId;
-        this.password = createUserDto.password;
         this.role = createUserDto.role;
     }
+    setPassword(password: string){
+        this.password = password
+    }
 
-    setHashPw(encoded_pw: string): boolean {
+    setHashPw(): boolean {
         const salt = bcrypt.genSaltSync(this.saltRounds);
-        this.hashedPw = bcrypt.hashSync(encoded_pw, salt);
+        this.hashedPw = bcrypt.hashSync(this.password, salt);
         return true
     }
 
