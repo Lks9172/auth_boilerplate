@@ -4,17 +4,17 @@ import {
   Entity,
   Index,
   PrimaryColumn,
-} from 'typeorm';
+} from 'typeorm'
 
 @Entity()
 export class User extends BaseEntity {
   @Index()
   @PrimaryColumn('varchar', {name: 'user_id', nullable: false, unique: true, length: 20})
-  userId!: string;
+  userId!: string
 
   @Column('char', { name: 'password', nullable: false, length: 60})
-  password!: string;
+  password!: string
 
   @Column('varchar', { name: 'role', nullable: false, length: 20, default: 'basicuser'})
-  role!: string;
+  role!: string
 }

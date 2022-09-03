@@ -1,14 +1,14 @@
-import { IsAlphanumeric, IsNotEmpty, Length } from 'class-validator';
+import { IsAlphanumeric, IsNotEmpty, Length } from 'class-validator'
 
 export class CreateUserDto {
   @IsNotEmpty()
   @IsAlphanumeric()
   @Length(10, 15)
-  userId: string;
+  userId: string
 
   @IsNotEmpty()
-  password: string;
+  password: string
 
   @IsNotEmpty()
-  role: string;
+  role: string
 }
