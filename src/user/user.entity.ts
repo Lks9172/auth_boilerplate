@@ -17,4 +17,12 @@ export class User extends BaseEntity {
 
   @Column('varchar', { name: 'role', nullable: false, length: 20, default: 'basicuser'})
   role!: string
+
+
+  @Column('varchar', { name: 'accessToken', nullable: true, length: 256, default: null })
+  accessToken!: string
+
+
+  @Column('varchar', { name: 'refresh_token', nullable: true, length: 256, default: null })
+  refreshToken!: string
 }

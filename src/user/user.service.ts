@@ -21,7 +21,7 @@ export class UserService {
         account.setSignUpinfo(createUserDto)
         account.setHashPw()
         const newUser = await this.userRepository.createUser(account)
-    return newUser
+        return newUser
     }
 
     async login(signInUserDto: SignInUserDto): Promise<tLoginRes> {
@@ -33,8 +33,12 @@ export class UserService {
             throw new BadRequestException('password가 일치하지 않습니다.')
         if (!account.getJwt())
             throw new BadRequestException('token발급에 실패했습니다.')
+        if (!account.getRefreshToken())
+            throw new BadRequestException('refreshToken발급에 실패했습니다.')
 
-    return account.getResform()
+        await this.userRepository.updateTokenById(user, account)
+
+        return account.getResform()
     }
     
     async updatePassword(changePwUserDto: ChangePwUserDto): Promise<boolean> {

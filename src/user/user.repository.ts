@@ -45,6 +45,25 @@ export class UserRepository extends Repository<User> {
         return res
     }
 
+    async updateTokenById(user: User, account: Account): Promise<boolean> {
+      const res = await this.update(
+        user, 
+        {
+          accessToken: account.accessToken,
+          refreshToken: account.refreshToken
+        })
+        .then(()=>true)
+        .catch((e) => {
+          console.log(e)
+          return false
+        })
+
+      if (!res)
+        throw new Error('token정보를 업데이트하는데 실패했습니다.')
+
+      return res
+  }
+
     async deleteById(user: User): Promise<boolean> {
       const res = await this.delete(user)
         .then(()=>true)

@@ -11,7 +11,8 @@ export class Account {
     hashedPw: string
     role: string
     saltRounds = 10
-    token: string
+    accessToken: string
+    refreshToken: string
 
     setSignUpinfo(createUserDto: CreateUserDto){
         this.password = createUserDto.password
@@ -47,12 +48,12 @@ export class Account {
             }
         )
 
-        this.token = token
+        this.accessToken = token
         return true
     }
 
     getRefreshToken(): boolean {
-        const token = jwt.sign(
+        const refreshToken = jwt.sign(
             {
                 type: 'JWT',
                 id: this.userId,
@@ -64,14 +65,15 @@ export class Account {
             }
         )
 
-        this.token = token
+        this.refreshToken = refreshToken
         return true
     }
 
     getResform(): tLoginRes{
         return {
             userId: this.userId,
-            token: this.token
+            token: this.accessToken,
+            refreshToken: this.refreshToken
         }
     }
 }
