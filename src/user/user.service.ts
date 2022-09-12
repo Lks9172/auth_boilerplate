@@ -24,7 +24,7 @@ export class UserService {
     return newUser
     }
 
-    async signIn(signInUserDto: SignInUserDto): Promise<tLoginRes> {
+    async login(signInUserDto: SignInUserDto): Promise<tLoginRes> {
         const account = new Account()
         account.setSignInInfo(signInUserDto)
         const user = await this.userRepository.getUserById(account.userId)
@@ -36,7 +36,7 @@ export class UserService {
 
     return account.getResform()
     }
-
+    
     async updatePassword(changePwUserDto: ChangePwUserDto): Promise<boolean> {
         const account = new Account()
         account.setSignInInfo(changePwUserDto)
@@ -46,5 +46,16 @@ export class UserService {
             throw new BadRequestException('password가 일치하지 않습니다.')
 
         return await this.userRepository.updatePasswordById(user)
+    }
+
+    async deleteUser(changePwUserDto: ChangePwUserDto): Promise<boolean> {
+        const account = new Account()
+        account.setSignInInfo(changePwUserDto)
+        const user = await this.userRepository.getUserById(account.userId)
+
+        if (!account.comparePassword(user.password))
+            throw new BadRequestException('password가 일치하지 않습니다.')
+
+        return await this.userRepository.deleteById(user)
     }
 }

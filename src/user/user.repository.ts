@@ -44,4 +44,18 @@ export class UserRepository extends Repository<User> {
 
         return res
     }
+
+    async deleteById(user: User): Promise<boolean> {
+      const res = await this.delete(user)
+        .then(()=>true)
+        .catch((e) => {
+          console.log(e)
+          return false
+        })
+
+      if (!res)
+        throw new Error('user를 삭제하는데 실패했습니다.')
+
+      return res
+  }
 }

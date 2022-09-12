@@ -42,10 +42,11 @@ export class Account {
             },
             process.env.SECRET_KEY,
             {
-                expiresIn: '60m',
+                expiresIn: '20m',
                 issuer: 'admin',
             }
         )
+
         this.token = token
         return true
     }
