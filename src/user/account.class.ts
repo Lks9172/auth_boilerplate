@@ -51,6 +51,23 @@ export class Account {
         return true
     }
 
+    getRefreshToken(): boolean {
+        const token = jwt.sign(
+            {
+                type: 'JWT',
+                id: this.userId,
+            },
+            process.env.SECRET_KEY,
+            {
+                expiresIn: '14d',
+                issuer: 'admin',
+            }
+        )
+
+        this.token = token
+        return true
+    }
+
     getResform(): tLoginRes{
         return {
             userId: this.userId,
