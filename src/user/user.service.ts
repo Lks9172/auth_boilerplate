@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { CreateUserDto } from './dto/create-user.dto'
 import { SignInUserDto } from './dto/SignIn-user.dto'
-import { ChangePwUserDto } from './dto/changePw-user.dto'
 import { Account } from './account.class'
 import { User } from './user.entity'
 import { UserRepository } from './user.repository'
@@ -16,6 +15,7 @@ export class UserService {
         private userRepository: UserRepository,
       ) {}
 
+    /**user생성 함수 */
     async createAccount(createUserDto: CreateUserDto): Promise<User> {
         const account = new Account()
         account.setSignUpinfo(createUserDto)
@@ -24,42 +24,47 @@ export class UserService {
         return newUser
     }
 
+    /**로그인 함수 */
     async login(signInUserDto: SignInUserDto): Promise<tLoginRes> {
         const account = new Account()
-        account.setSignInInfo(signInUserDto)
-        const user = await this.userRepository.getUserById(account.userId)
+        const user = await this.userRepository.getUserById(signInUserDto.userId)
 
-        if (!account.comparePassword(user.password))
-            throw new BadRequestException('password가 일치하지 않습니다.')
-        if (!account.getJwt())
-            throw new BadRequestException('token발급에 실패했습니다.')
-        if (!account.getRefreshToken())
-            throw new BadRequestException('refreshToken발급에 실패했습니다.')
+        account.setSignInInfo(signInUserDto)
+        account.checkPassword(user.password)
+        account.getJwt()
+        account.getRefreshToken()
 
         await this.userRepository.updateTokenById(user, account)
 
         return account.getResform()
     }
-    
-    async updatePassword(changePwUserDto: ChangePwUserDto): Promise<boolean> {
-        const account = new Account()
-        account.setSignInInfo(changePwUserDto)
-        const user = await this.userRepository.getUserById(account.userId)
 
-        if (!account.comparePassword(user.password))
-            throw new BadRequestException('password가 일치하지 않습니다.')
+    /**패스워드 변경 함수 */
+    async updatePassword(user: User, changePwUserDto: SignInUserDto): Promise<boolean> {
+        const accountInfo = new Account()
+        accountInfo.setSignInInfo(changePwUserDto)
+        accountInfo.checkPassword(user.password)
 
-        return await this.userRepository.updatePasswordById(user)
+        const newAccount = new Account()
+        newAccount.setSignUpinfo({
+            userId: user.userId,
+            password: changePwUserDto.newPassword,
+            role: user.role,
+        })
+        newAccount.setHashPw()
+
+        return await this.userRepository.updatePasswordById(user, newAccount)
     }
 
-    async deleteUser(changePwUserDto: ChangePwUserDto): Promise<boolean> {
+    /** 특정 user삭제 함수 */
+    async deleteUser(user: User, deleteUserDto: SignInUserDto): Promise<boolean> {
         const account = new Account()
-        account.setSignInInfo(changePwUserDto)
-        const user = await this.userRepository.getUserById(account.userId)
-
-        if (!account.comparePassword(user.password))
-            throw new BadRequestException('password가 일치하지 않습니다.')
-
+        account.setSignInInfo({
+            userId: user.userId,
+            password: deleteUserDto.password
+        })
+        account.checkPassword(user.password)
+        
         return await this.userRepository.deleteById(user)
     }
 }

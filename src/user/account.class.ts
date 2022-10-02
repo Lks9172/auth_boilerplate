@@ -3,14 +3,18 @@ import { SignInUserDto } from "./dto/signIn-user.dto"
 import { tLoginRes } from "./dto/types"
 import * as bcrypt from 'bcrypt'
 import * as jwt from 'jsonwebtoken'
+import { BadRequestException } from "@nestjs/common/exceptions"
+import { exec } from "child_process"
+import { execPath } from "process"
 
 
 export class Account {
     userId: string
     private password: string
     hashedPw: string
+    newPassword: string
     role: string
-    saltRounds = 10
+    saltRounds = parseInt(process.env.SALTROUNDS)
     accessToken: string
     refreshToken: string
 
@@ -26,46 +30,48 @@ export class Account {
         return true
     }
 
-    setSignInInfo(signInUserDto: SignInUserDto){
-        this.password = signInUserDto.password
-        this.userId = signInUserDto.userId
+    setSignInInfo(UserDto: SignInUserDto){
+        this.password = UserDto.password
+        this.userId = UserDto.userId
     }
 
-    comparePassword(DbPw: string): boolean {
-        return bcrypt.compareSync(this.password, DbPw)
+    checkPassword(DbPw: string): boolean {
+        if (bcrypt.compareSync(this.password, DbPw) === false)
+            throw new BadRequestException('password가 일치하지 않습니다.')
+        return true
     }
 
-    getJwt(): boolean {
-        const token = jwt.sign(
+    genJwt(expiresIn: string): string {
+        return jwt.sign(
             {
                 type: 'JWT',
                 id: this.userId,
             },
             process.env.SECRET_KEY,
             {
-                expiresIn: '20m',
+                expiresIn: expiresIn,
                 issuer: 'admin',
             }
         )
+    }
 
-        this.accessToken = token
+    getJwt(): boolean {
+        try{
+            this.accessToken = this.genJwt(process.env.EXPIRESIN)
+        }
+        catch(e){
+            throw new BadRequestException('accessToken발급에 실패했습니다.')
+        }
         return true
     }
 
     getRefreshToken(): boolean {
-        const refreshToken = jwt.sign(
-            {
-                type: 'JWT',
-                id: this.userId,
-            },
-            process.env.SECRET_KEY,
-            {
-                expiresIn: '14d',
-                issuer: 'admin',
-            }
-        )
-
-        this.refreshToken = refreshToken
+        try{
+            this.refreshToken = this.genJwt(process.env.REFRESHEXPIRESIN)
+        }
+        catch(e){
+            throw new BadRequestException('refreshToken발급에 실패했습니다.')
+        }
         return true
     }
 
