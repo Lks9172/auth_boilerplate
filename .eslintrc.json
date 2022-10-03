@@ -15,8 +15,7 @@
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint",
-        "prefer-arrow"
+        "@typescript-eslint"
     ],
     "rules": {
         "semi": ["error", "always"],
