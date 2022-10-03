@@ -6,7 +6,6 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { UserRepository } from './user.repository';
 import { JwtStrategy } from './jwt.strategy';
-import { Account } from './account.class';
 
 @Module({
   imports: [
@@ -20,7 +19,7 @@ import { Account } from './account.class';
     TypeOrmModule.forFeature([UserRepository]),
   ],
   controllers: [UserController],
-  providers: [UserService, JwtStrategy, Account],
+  providers: [UserService, JwtStrategy],
   exports: [JwtStrategy, PassportModule],
 })
 export class UserModule {}
