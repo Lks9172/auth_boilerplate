@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { CreateUserDto } from './dto/create-user.dto'
 import { SignInUserDto } from './dto/SignIn-user.dto'
@@ -17,22 +17,20 @@ export class UserService {
 
     /**user생성 함수 */
     async createAccount(createUserDto: CreateUserDto): Promise<User> {
-        const account = new Account()
-        account.setSignUpinfo(createUserDto)
-        account.setHashPw()
+        const account = new Account(createUserDto)
+        account.cipher.setHashPw()
         const newUser = await this.userRepository.createUser(account)
         return newUser
     }
 
     /**로그인 함수 */
     async login(signInUserDto: SignInUserDto): Promise<tLoginRes> {
-        const account = new Account()
         const user = await this.userRepository.getUserById(signInUserDto.userId)
 
-        account.setSignInInfo(signInUserDto)
-        account.checkPassword(user.password)
-        account.getJwt()
-        account.getRefreshToken()
+        const account = new Account(signInUserDto)
+        account.cipher.checkPassword(user.password)
+        account.jwt.setAccessToken()
+        account.jwt.setRefreshToken()
 
         await this.userRepository.updateTokenById(user, account)
 
@@ -41,29 +39,26 @@ export class UserService {
 
     /**패스워드 변경 함수 */
     async updatePassword(user: User, changePwUserDto: SignInUserDto): Promise<boolean> {
-        const accountInfo = new Account()
-        accountInfo.setSignInInfo(changePwUserDto)
-        accountInfo.checkPassword(user.password)
+        const accountInfo = new Account(changePwUserDto)
+        accountInfo.cipher.checkPassword(user.password)
 
-        const newAccount = new Account()
-        newAccount.setSignUpinfo({
+        const newAccount = new Account({
             userId: user.userId,
             password: changePwUserDto.newPassword,
             role: user.role,
         })
-        newAccount.setHashPw()
+        newAccount.cipher.setHashPw()
 
         return await this.userRepository.updatePasswordById(user, newAccount)
     }
 
     /** 특정 user삭제 함수 */
     async deleteUser(user: User, deleteUserDto: SignInUserDto): Promise<boolean> {
-        const account = new Account()
-        account.setSignInInfo({
+        const account = new Account({
             userId: user.userId,
             password: deleteUserDto.password
         })
-        account.checkPassword(user.password)
+        account.cipher.checkPassword(user.password)
         
         return await this.userRepository.deleteById(user)
     }

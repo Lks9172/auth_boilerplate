@@ -15,7 +15,7 @@ export class UserRepository extends Repository<User> {
 
     const user = this.create({
       userId: account.userId,
-      password: account.hashedPw,
+      password: account.cipher.hashedPw,
       role: account.role,
     })
 
@@ -35,7 +35,7 @@ export class UserRepository extends Repository<User> {
 
   /**user의 password를 변경하는 함수 */
   async updatePasswordById(user: User, account: Account): Promise<boolean> {
-      const res = await this.update(user, {password: account.hashedPw})
+      const res = await this.update(user, {password: account.cipher.hashedPw})
         .then(()=>true)
         .catch((e) => {
           console.log(e)
@@ -53,8 +53,8 @@ export class UserRepository extends Repository<User> {
     const res = await this.update(
       user, 
       {
-        accessToken: account.accessToken,
-        refreshToken: account.refreshToken
+        accessToken: account.jwt.accessToken,
+        refreshToken: account.jwt.refreshToken
       })
       .then(()=>true)
       .catch((e) => {

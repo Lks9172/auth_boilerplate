@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Put, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common'
+import { Body, Controller, Delete, Post, Put, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from './dto/create-user.dto'
 import { SignInUserDto } from './dto/SignIn-user.dto'
@@ -49,14 +49,6 @@ export class UserController {
     }
   }
 
-  // @Get('/logout')
-  // @UsePipes(ValidationPipe)
-  // async logout(@Body() changePwUserDto: ChangePwUserDto): Promise<tChangePwRes> {
-  //   const res = await this.userService.updatePassword(changePwUserDto)
-  //   return {
-  //     success: res
-  //   }
-  // }
   @Post('/test')
   @UseGuards(AuthGuard())
   test(@GetUser() user:User) {

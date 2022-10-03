@@ -7,3 +7,9 @@ export declare type tLoginRes = {
 export declare type tChangePwRes = {
   success: boolean
 }
+
+export declare type tAccount = {
+  userId: string
+  password: string
+  role?: string
+}
