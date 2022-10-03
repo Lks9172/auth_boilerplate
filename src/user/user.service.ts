@@ -17,7 +17,7 @@ export class UserService {
   /**user생성 메서드 */
   async createAccount(createUserDto: CreateUserDto): Promise<User> {
     const account = new Account(createUserDto);
-    account.cipher.setHashPw();
+    await account.cipher.setHashPw();
     const newUser = await this.userRepository.createUser(account);
     return newUser;
   }
@@ -49,7 +49,7 @@ export class UserService {
       password: changePwUserDto.newPassword,
       role: user.role,
     });
-    newAccount.cipher.setHashPw();
+    await newAccount.cipher.setHashPw();
 
     return await this.userRepository.updatePasswordById(user, newAccount);
   }

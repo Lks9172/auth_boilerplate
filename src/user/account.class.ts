@@ -81,9 +81,9 @@ export class Cipher {
     this.password = password;
   }
 
-  setHashPw(): boolean {
-    const salt = bcrypt.genSaltSync(this.saltRounds);
-    this.hashedPw = bcrypt.hashSync(this.password, salt);
+  async setHashPw(): Promise<boolean> {
+    const salt = await bcrypt.genSalt(this.saltRounds);
+    this.hashedPw = await bcrypt.hash(this.password, salt);
     return true;
   }
 
