@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
-import { SignInUserDto } from './dto/SignIn-user.dto';
+import { CreateUserDto } from './dto/createUser.dto';
+import { SignInUserDto } from './dto/signInUser.dto';
 import { tChangePwRes, tLoginRes } from './dto/types';
 import { GetUser } from './get-user.decorator';
 import { UserService } from './user.service';

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+    app:
+        container_name: app
+        build:
+            context: .
+            dockerfile: ./Dockerfile
+        expose:
+            - '3000'
+        volumes:
+            - ./:/app/
+
+    nginx:
+        image: nginx:latest
+        container_name: nginx
+        build: ./proxy
+        ports:
+            - '80:80'
+        restart: 'always'
+        depends_on:
+            - app
