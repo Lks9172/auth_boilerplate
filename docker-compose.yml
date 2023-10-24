@@ -1,22 +1,53 @@
 version: '3.8'
 
+networks:
+    mynetwork:
+
 services:
+    mysql: # See Also: https://hub.docker.com/_/mysql
+        container_name: mysql
+        image: mysql:8.0
+        hostname: hostname-mysql
+        command: --default-authentication-plugin=mysql_native_password
+        restart: always
+        environment:
+            MYSQL_DATABASE: buzzvil
+            MYSQL_ROOT_PASSWORD: root
+            TZ: Asia/Seoul
+        expose:
+            - 3306
+        ports:
+            - 3306:3306/tcp
+        networks:
+            - mynetwork
+
     app:
         container_name: app
         build:
             context: .
             dockerfile: ./Dockerfile
+        environment:
+            MYSQL_HOST: mysql
         expose:
-            - '3000'
+            - 3000
         volumes:
             - ./:/app/
+        depends_on:
+            - mysql
+        networks:
+            - mynetwork
+        command:
+            - sh 
+            - ./script/on-start.sh
 
     nginx:
         image: nginx:latest
         container_name: nginx
         build: ./proxy
         ports:
-            - '80:80'
+            - 80:80
         restart: 'always'
+        networks:
+            - mynetwork
         depends_on:
             - app

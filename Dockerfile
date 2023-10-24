@@ -9,10 +9,12 @@ WORKDIR /usr/src/app
 
 # Copy package.json file to working directory
 COPY package*.json ./
+COPY .env ./
+COPY ./script ./script
+
 # npm 명령어 실행해 명시된 노드 패키지들을 실행합니다.
 RUN npm install
 
 # Copy project
 COPY . ./
 
-CMD [ "npm", "start" ]
