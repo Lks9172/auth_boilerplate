@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Post,
   Put,
   UseGuards,
@@ -62,5 +63,10 @@ export class UserController {
   @UseGuards(AuthGuard())
   test(@GetUser() user: User) {
     console.log(user);
+  }
+
+  @Get('/')
+  hello() {
+    return 'Hello server'
   }
 }

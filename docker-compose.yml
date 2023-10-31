@@ -11,7 +11,7 @@ services:
         command: --default-authentication-plugin=mysql_native_password
         restart: always
         environment:
-            MYSQL_DATABASE: buzzvil
+            MYSQL_DATABASE: auth
             MYSQL_ROOT_PASSWORD: root
             TZ: Asia/Seoul
         expose:
@@ -39,6 +39,8 @@ services:
         command:
             - sh 
             - ./script/on-start.sh
+        ports:
+            - 3000:3000
 
     nginx:
         image: nginx:latest
