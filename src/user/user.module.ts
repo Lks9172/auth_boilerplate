@@ -2,10 +2,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
-import { UserRepository } from './user.repository';
-import { JwtStrategy } from './jwt.strategy';
+import { UserService } from './application/user.service';
+import { UserController } from './presentation/user.controller';
+import { UserRepository } from './repository/user.repository';
 
 @Module({
   imports: [
@@ -19,7 +18,6 @@ import { JwtStrategy } from './jwt.strategy';
     TypeOrmModule.forFeature([UserRepository]),
   ],
   controllers: [UserController],
-  providers: [UserService, JwtStrategy],
-  exports: [JwtStrategy, PassportModule],
+  providers: [UserService]
 })
 export class UserModule {}

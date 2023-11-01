@@ -2,16 +2,6 @@ import { BaseEntity, Column, Entity, Index, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class User extends BaseEntity {
-  @Index()
-  @Column('varchar', {
-    name: 'role',
-    nullable: false,
-    length: 20,
-    default: 'basicuser',
-  })
-  role!: string;
-
-  @Index()
   @PrimaryColumn('varchar', {
     name: 'user_id',
     nullable: false,
@@ -23,19 +13,32 @@ export class User extends BaseEntity {
   @Column('char', { name: 'password', nullable: false, length: 60 })
   password!: string;
 
-  @Column('varchar', {
-    name: 'accessToken',
-    nullable: true,
-    length: 256,
-    default: null,
+  @PrimaryColumn('varchar', {
+    name: 'email',
+    nullable: false,
+    unique: true,
+    length: 50,
   })
-  accessToken!: string;
+  email!: string;
 
   @Column('varchar', {
-    name: 'refresh_token',
-    nullable: true,
-    length: 256,
-    default: null,
+    name: 'name',
+    nullable: false,
+    length: 20,
   })
-  refreshToken!: string;
+  name!: string;
+
+  @Column('varchar', {
+    name: 'birth_date',
+    nullable: true,
+    length: 20,
+  })
+  birthDate!: Date;
+
+  @Column({
+    type: 'boolean',
+    name: 'gender',
+    nullable: true,
+  })
+  gender!: boolean;
 }
