@@ -1,14 +1,28 @@
-import { IsAlphanumeric, IsNotEmpty, Length } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsEmail, IsString, IsOptional, IsDate, IsBoolean, Length, MinLength, IsDateString } from 'class-validator';
 
 export class CreateUserDto {
-  @IsNotEmpty()
-  @IsAlphanumeric()
-  @Length(10, 15)
+  @IsString()
+  @Length(8, 20)
   userId: string;
 
-  @IsNotEmpty()
+  @IsString()
+  @MinLength(8)
+  @IsOptional()
   password: string;
 
-  @IsNotEmpty()
-  role: string;
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  name: string;
+
+  @IsDate()
+  @IsOptional()
+  @Type(() => Date)
+  birthdate: Date;
+
+  @IsBoolean()
+  @IsOptional()
+  gender: boolean;
 }
