@@ -5,15 +5,21 @@ import * as jwt from 'jsonwebtoken';
 
 export class Account {
   userId: string;
-  password: string;
-  role: string;
+  password: string | null;
+  email: string;
+  name: string ;
+  birthdate: Date | null;
+  gender: boolean | null;
   cipher: Cipher;
   jwt: JsonWentoken;
 
   constructor(accountInfo: tAccount) {
     this.userId = accountInfo.userId;
     this.password = accountInfo.password;
-    this.role = accountInfo.role;
+    this.email = accountInfo.email;
+    this.name = accountInfo.name;
+    this.birthdate = accountInfo.birthdate;
+    this.gender = accountInfo.gender;
 
     this.cipher = new Cipher(this.password);
     this.jwt = new JsonWentoken(this.userId);

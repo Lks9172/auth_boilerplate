@@ -13,10 +13,19 @@ export class UserService {
   ) {}
 
   /**user생성 메서드 */
-  async createAccount(createUserDto: CreateUserDto): Promise<string> {
-    const account = new Account(createUserDto);
+  async createUser(userInfo: CreateUserDto): Promise<User> {
+    const account = new Account(userInfo);
     await account.cipher.setHashPw();
-    // const newUser = await this.userRepository.createUser(account);
-    return 'hello world!!!';
+    const newUser = await this.userRepository.createUser(account);
+    
+    return new User();
+  }
+
+  setUserInfo(userInfo: CreateUserDto): CreateUserDto {
+    userInfo.password = userInfo.password || null;
+    userInfo.birthdate = userInfo.birthdate || null;
+    userInfo.birthdate = userInfo.birthdate === null ? null : new Date(userInfo.birthdate);
+    userInfo.gender = userInfo.gender || null;
+    return userInfo;
   }
 }

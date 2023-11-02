@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, Index, PrimaryColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class User extends BaseEntity {
@@ -28,10 +28,10 @@ export class User extends BaseEntity {
   })
   name!: string;
 
-  @Column('varchar', {
+  @Column({
+    type: 'date',
     name: 'birth_date',
     nullable: true,
-    length: 20,
   })
   birthDate!: Date;
 

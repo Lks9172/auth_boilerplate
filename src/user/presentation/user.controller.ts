@@ -16,9 +16,10 @@ export class UserController {
 
   @Post('/')
   @UsePipes(ValidationPipe)
-  signUp(@Body() createUserDto: CreateUserDto): string {
-    console.log(createUserDto);
-    return 'hi';
+  signUp(@Body() userInfo: CreateUserDto): Promise<User> {
+    this.userService.setUserInfo(userInfo);
+    console.log();
+    return this.userService.createUser(userInfo);
   }
 
   @Get('/')

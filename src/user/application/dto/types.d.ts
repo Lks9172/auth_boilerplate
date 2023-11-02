@@ -10,6 +10,9 @@ export declare type tChangePwRes = {
 
 export declare type tAccount = {
   userId: string;
-  password: string;
-  role?: string;
+  password: string | null;
+  email: string;
+  name: string ;
+  birthdate: Date | null;
+  gender: boolean | null;
 };
