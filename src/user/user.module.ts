@@ -5,6 +5,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserService } from './application/user.service';
 import { UserController } from './presentation/user.controller';
 import { UserRepository } from './repository/user.repository';
+import { RegisterFactory } from './application/factory/register/register.factory';
+import { OriginRegister } from './application/factory/register/origin-register.client';
+import { NaverRegister } from './application/factory/register/naver-register.client';
+import { KakaoRegister } from './application/factory/register/kakao-register.client';
+import { GoogleRegister } from './application/factory/register/google-register.client';
 
 @Module({
   imports: [
@@ -18,6 +23,13 @@ import { UserRepository } from './repository/user.repository';
     TypeOrmModule.forFeature([UserRepository]),
   ],
   controllers: [UserController],
-  providers: [UserService]
+  providers: [
+    UserService,
+    RegisterFactory,
+    OriginRegister,
+    NaverRegister,
+    KakaoRegister,
+    GoogleRegister,
+  ]
 })
 export class UserModule {}

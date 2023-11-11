@@ -1,5 +1,4 @@
-import { Type } from 'class-transformer';
-import { IsEmail, IsString, IsDate, IsBoolean, Length, Validate, IsNotEmpty, IsOptional, ValidatorConstraint, ValidatorConstraintInterface, IsISO8601 } from 'class-validator';
+import { IsEmail, IsString, Length, Validate, IsOptional, ValidatorConstraint, ValidatorConstraintInterface, IsISO8601 } from 'class-validator';
 
 @ValidatorConstraint({ name: 'IsPassword' })
 export class IsPassword implements ValidatorConstraintInterface {
@@ -48,15 +47,19 @@ export class CreateUserDto {
   @Validate(IsBirthDay, {
     message: 'birthday must be a string of at least 10 characters or null'
   })
-  birthdate: Date | null;
+  birthdate?: Date | null;
 
   @Validate(IsGender, {
     message: 'gender must be a string of at least 8 characters or null'
   })
-  gender: boolean | null;
+  gender?: boolean | null;
 
   @Validate(IsPassword, {
     message: 'password must be a string of at least 8 characters or null'
   })
-  password: string | null;
+  password?: string | null;
+
+  token?: string | null;
+
+  socialType: string;
 }
