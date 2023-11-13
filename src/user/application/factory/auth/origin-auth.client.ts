@@ -1,5 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import { UserInfo } from '../../builder/user.builder';
 import { AuthClient } from './auth.client';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/user/domain/user.entity';
@@ -18,7 +17,7 @@ export class OriginAuth implements AuthClient{
         this.jwt = new JsonWentoken(this.user.email);
     }
 
-    verifyUser(user: User): boolean {
+    async verifyUser(user: User): Promise<boolean> {
         return this.cipher.checkPassword(user);
     }
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/createUser.dto';
 import { User } from '../domain/user.entity';
@@ -35,7 +35,11 @@ export class UserService {
     const checkUser = await this.userRepository.findOne({
       email: user.email,
     });
-    auth.verifyUser(checkUser);
+    if (!checkUser)
+      throw new BadRequestException('가입이력이 없는 email입니다.');
+
+
+    await auth.verifyUser(checkUser);
     await auth.login();
 
     return auth;

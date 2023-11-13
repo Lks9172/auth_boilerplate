@@ -12,6 +12,7 @@ import { KakaoRegister } from './application/factory/register/kakao-register.cli
 import { GoogleRegister } from './application/factory/register/google-register.client';
 import { AuthFactory } from './application/factory/auth/auth.factory';
 import { OriginAuth } from './application/factory/auth/origin-auth.client';
+import { KakaoAuth } from './application/factory/auth/kakao-auth.client';
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { OriginAuth } from './application/factory/auth/origin-auth.client';
     KakaoRegister,
     GoogleRegister,
     AuthFactory,
-    OriginAuth
+    OriginAuth,
+    KakaoAuth
   ]
 })
 export class UserModule {}
