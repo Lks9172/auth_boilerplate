@@ -1,4 +1,5 @@
-import { IsEmail, IsString, Length, Validate, IsOptional, ValidatorConstraint, ValidatorConstraintInterface, IsISO8601 } from 'class-validator';
+import { IsEmail, IsString, Length, Validate, IsOptional, ValidatorConstraint, ValidatorConstraintInterface, IsISO8601, IsNotEmpty, IsEnum } from 'class-validator';
+import { SocialType } from 'src/user/domain/social-type.enum';
 
 @ValidatorConstraint({ name: 'IsPassword' })
 export class IsPassword implements ValidatorConstraintInterface {
@@ -10,10 +11,10 @@ export class IsPassword implements ValidatorConstraintInterface {
   }
 }
 
-@ValidatorConstraint({ name: 'IsBirthDay' })
-export class IsBirthDay implements ValidatorConstraintInterface {
-  validate(birthDay: string | null ): boolean {
-    if (birthDay === undefined || birthDay === null || typeof birthDay === 'string') {
+@ValidatorConstraint({ name: 'IsBirthDate' })
+export class IsBirthDate implements ValidatorConstraintInterface {
+  validate(birthDate: string | null ): boolean {
+    if (birthDate === undefined || birthDate === null || typeof birthDate === 'string') {
       return true;
     }
     return false;
@@ -44,8 +45,8 @@ export class CreateUserDto {
   name: string;
 
   @IsISO8601()
-  @Validate(IsBirthDay, {
-    message: 'birthday must be a string of at least 10 characters or null'
+  @Validate(IsBirthDate, {
+    message: 'birthDate must be a string of at least 10 characters or null'
   })
   birthdate?: Date | null;
 
@@ -61,5 +62,7 @@ export class CreateUserDto {
 
   token?: string | null;
 
+  @IsNotEmpty()
+  @IsEnum(SocialType)
   socialType: string;
 }

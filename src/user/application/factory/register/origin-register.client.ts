@@ -1,6 +1,6 @@
 import { UserRegister } from './register.client';
-import { Cipher } from '../../account.class';
 import { UserInfo } from '../../builder/user.builder';
+import { Cipher } from '../auth/origin-auth.client';
 
 export class OriginRegister implements UserRegister{
   user: UserInfo;

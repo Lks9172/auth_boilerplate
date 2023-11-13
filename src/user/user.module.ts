@@ -10,6 +10,8 @@ import { OriginRegister } from './application/factory/register/origin-register.c
 import { NaverRegister } from './application/factory/register/naver-register.client';
 import { KakaoRegister } from './application/factory/register/kakao-register.client';
 import { GoogleRegister } from './application/factory/register/google-register.client';
+import { AuthFactory } from './application/factory/auth/auth.factory';
+import { OriginAuth } from './application/factory/auth/origin-auth.client';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { GoogleRegister } from './application/factory/register/google-register.c
     NaverRegister,
     KakaoRegister,
     GoogleRegister,
+    AuthFactory,
+    OriginAuth
   ]
 })
 export class UserModule {}

@@ -11,6 +11,8 @@ import { User } from '../domain/user.entity';
 import { CreateUserDto } from '../application/dto/createUser.dto';
 import { UserService } from '../application/user.service';
 import { KakaoTokenGenerator, NaverTokenGenerator, GoogleTokenGenerator } from '../application/register';
+import { SignInUserDto } from '../application/dto/signInUser.dto';
+import { tLoginRes } from '../application/dto/types';
 
 @Controller('user')
 export class UserController {
@@ -23,6 +25,18 @@ export class UserController {
     return this.userService.createUser(userInfo.socialType, userInfo);
   }
 
+  @Post('/signin')
+  @UsePipes(ValidationPipe)
+  async signIn(@Body() user: SignInUserDto): Promise<tLoginRes> {
+    const auth = await this.userService.signIn(user);
+    const token = {
+      email: auth.user.email,
+      accessToken: auth.jwt.accessToken,
+      refreshToken: auth.jwt.refreshToken,
+    };
+    return token;
+  }
+
   @Get('/')
   @UsePipes(ValidationPipe)
   async lo(@Query('code') code: string): Promise<string> {
@@ -31,9 +45,6 @@ export class UserController {
     console.log(token);
     return token;
   }
-
-  // `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=841e625dbb6cf7cf348f3d20856fa1b3&redirect_uri=http://localhost:3000/user/login`
-
 
   // @Get('/')
   // hello() {

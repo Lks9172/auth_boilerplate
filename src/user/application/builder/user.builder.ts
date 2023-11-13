@@ -1,3 +1,5 @@
+import { SocialType } from 'src/user/domain/social-type.enum';
+
 export class UserInfo {
     userId: string;
     password: string;
@@ -20,7 +22,11 @@ export class UserInfo {
 
     setPw(password: string) {
         this.password = password || null;
-        return this;
+        
+        if (this.socialType == SocialType.ORIGIN)
+            this.password = null;
+        
+            return this;
     }
     
     setEmail(email: string) {
@@ -35,7 +41,7 @@ export class UserInfo {
     }
 
     setGender(gender: boolean) {
-        this.gender = gender || null;
+        this.gender = typeof gender == 'boolean'? gender : null;
         return this;
     }
 

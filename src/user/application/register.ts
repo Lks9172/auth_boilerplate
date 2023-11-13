@@ -1,29 +1,5 @@
-import { Cipher } from './account.class';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
-import { UserInfo } from './builder/user.builder';
-
-export interface  Register{
-    user: UserInfo;
-    register(): Promise<boolean>
-}
-
-export class UserRegister implements Register{
-    user: UserInfo;
-    cipher: Cipher;
-
-    constructor(user: UserInfo) {
-        this.user = user;
-        this.cipher = new Cipher(this.user.password);
-    }
-
-    async register(): Promise<boolean> {
-        await this.cipher.setHashPw();
-        this.user.password = this.cipher.hashedPw;
-
-        return true;
-    }
-}
 
 export class KakaoTokenGenerator {
     private REQUEST_TOKEN_URL = 'https://kauth.kakao.com/oauth/token';

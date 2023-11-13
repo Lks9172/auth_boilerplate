@@ -10,10 +10,10 @@ export class User extends BaseEntity {
   })
   userId!: string;
 
-  @Column('char', { name: 'password', nullable: false, length: 60 })
-  password!: string;
+  @Column('char', { name: 'password', nullable: true, default: null, length: 60 })
+  password!: string | null;
 
-  @PrimaryColumn('varchar', {
+  @Column('varchar', {
     name: 'email',
     nullable: false,
     unique: true,

@@ -1,6 +1,6 @@
 export declare type tLoginRes = {
-  userId: string;
-  token: string;
+  email: string;
+  accessToken: string;
   refreshToken: string;
 };
 
@@ -16,3 +16,4 @@ export declare type tAccount = {
   birthdate: Date | null;
   gender: boolean | null;
 };
+
