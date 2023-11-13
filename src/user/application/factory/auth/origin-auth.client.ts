@@ -21,7 +21,7 @@ export class OriginAuth implements AuthClient{
         return this.cipher.checkPassword(user);
     }
 
-    async login(): Promise<boolean> {
+    login(): boolean {
         this.jwt.setAccessToken();
         this.jwt.setRefreshToken();
 

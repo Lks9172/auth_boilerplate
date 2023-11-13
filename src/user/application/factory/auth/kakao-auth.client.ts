@@ -42,7 +42,7 @@ export class KakaoAuth implements AuthClient{
       this.user.email = response.data.kakao_account.email;
     }
 
-    async login(): Promise<boolean> {
+    login(): boolean {
         this.jwt.setAccessToken();
         this.jwt.setRefreshToken();
 

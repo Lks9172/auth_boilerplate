@@ -8,5 +8,5 @@ export interface AuthClient
     jwt: JsonWentoken;
     setUser(user: SignInUserDto): void;
     verifyUser(user: User): Promise<boolean>
-    login(): Promise<boolean>
+    login(): boolean
 }
