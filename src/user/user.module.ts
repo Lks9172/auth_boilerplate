@@ -14,6 +14,7 @@ import { AuthFactory } from './application/factory/auth/auth.factory';
 import { OriginAuth } from './application/factory/auth/origin-auth.client';
 import { KakaoAuth } from './application/factory/auth/kakao-auth.client';
 import { NaverAuth } from './application/factory/auth/naver-auth.client';
+import { GoogleAuth } from './application/factory/auth/google-auth.client';
 
 @Module({
   imports: [
@@ -37,7 +38,8 @@ import { NaverAuth } from './application/factory/auth/naver-auth.client';
     AuthFactory,
     OriginAuth,
     KakaoAuth,
-    NaverAuth
+    NaverAuth,
+    GoogleAuth
   ]
 })
 export class UserModule {}

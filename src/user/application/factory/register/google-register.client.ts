@@ -31,5 +31,5 @@ export class GoogleRegister implements UserRegister{
       );
   
       this.user.email = response.data.email;
-     }
+    }
 }
