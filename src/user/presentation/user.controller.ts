@@ -40,7 +40,7 @@ export class UserController {
   @Get('/')
   @UsePipes(ValidationPipe)
   async lo(@Query('code') code: string): Promise<string> {
-    const generator = new KakaoTokenGenerator(code);
+    const generator = new NaverTokenGenerator(code);
     const token = await generator.verifyOauthMember();
     console.log(token);
     return token;

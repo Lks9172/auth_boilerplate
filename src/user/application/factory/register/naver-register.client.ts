@@ -31,5 +31,5 @@ export class NaverRegister implements UserRegister{
         );
     
         this.user.email = response.data.response.email;
-       }
+    }
 }

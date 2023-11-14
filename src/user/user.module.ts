@@ -13,6 +13,7 @@ import { GoogleRegister } from './application/factory/register/google-register.c
 import { AuthFactory } from './application/factory/auth/auth.factory';
 import { OriginAuth } from './application/factory/auth/origin-auth.client';
 import { KakaoAuth } from './application/factory/auth/kakao-auth.client';
+import { NaverAuth } from './application/factory/auth/naver-auth.client';
 
 @Module({
   imports: [
@@ -35,7 +36,8 @@ import { KakaoAuth } from './application/factory/auth/kakao-auth.client';
     GoogleRegister,
     AuthFactory,
     OriginAuth,
-    KakaoAuth
+    KakaoAuth,
+    NaverAuth
   ]
 })
 export class UserModule {}

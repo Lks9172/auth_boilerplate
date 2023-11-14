@@ -40,7 +40,7 @@ export class UserService {
 
 
     await auth.verifyUser(checkUser);
-    await auth.login();
+    auth.login();
 
     return auth;
   }
