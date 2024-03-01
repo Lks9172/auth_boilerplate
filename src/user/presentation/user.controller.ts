@@ -37,17 +37,20 @@ export class UserController {
     return token;
   }
 
-  @Get('/')
-  @UsePipes(ValidationPipe)
-  async lo(@Query('code') code: string): Promise<string> {
-    const generator = new GoogleTokenGenerator(code);
-    const token = await generator.verifyOauthMember();
-    console.log(token);
-    return token;
-  }
-
   // @Get('/')
-  // hello() {
-  //   return 'Hello server';
+  // @UsePipes(ValidationPipe)
+  // async lo(@Query('code') code: string): Promise<string> {
+  //   const generator = new GoogleTokenGenerator(code);
+  //   const token = await generator.verifyOauthMember();
+  //   console.log(token);
+  //   return token;
   // }
+
+  @Get('/')
+  async hello() {
+    console.log('1');
+    const a = await this.userService.getUser();
+    console.log('a');
+    return a;
+  }
 }

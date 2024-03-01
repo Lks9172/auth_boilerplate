@@ -4,7 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { UserService } from './application/user.service';
 import { UserController } from './presentation/user.controller';
-import { UserRepository } from './repository/user.repository';
+import { User } from './domain/user.entity';
 import { RegisterFactory } from './application/factory/register/register.factory';
 import { OriginRegister } from './application/factory/register/origin-register.client';
 import { NaverRegister } from './application/factory/register/naver-register.client';
@@ -15,6 +15,8 @@ import { OriginAuth } from './application/factory/auth/origin-auth.client';
 import { KakaoAuth } from './application/factory/auth/kakao-auth.client';
 import { NaverAuth } from './application/factory/auth/naver-auth.client';
 import { GoogleAuth } from './application/factory/auth/google-auth.client';
+import { UserRepository } from './repository/user.repository';
+import { TypeOrmExModule } from '../database/typeorm-ex.module';
 
 @Module({
   imports: [
@@ -25,7 +27,8 @@ import { GoogleAuth } from './application/factory/auth/google-auth.client';
         expiresIn: process.env.EXPIRESIN,
       },
     }),
-    TypeOrmModule.forFeature([UserRepository]),
+    TypeOrmModule.forFeature([User]),
+    TypeOrmExModule.forCustomRepository([UserRepository]),
   ],
   controllers: [UserController],
   providers: [
@@ -39,7 +42,8 @@ import { GoogleAuth } from './application/factory/auth/google-auth.client';
     OriginAuth,
     KakaoAuth,
     NaverAuth,
-    GoogleAuth
+    GoogleAuth,
   ]
 })
+
 export class UserModule {}

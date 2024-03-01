@@ -12,10 +12,10 @@ export class JsonWentoken {
       this.email = email;
     }
   
-    genJwt(expiresIn: string): string {
+    genJwt(type: string, expiresIn: string): string {
       return jwt.sign(
         {
-          type: 'JWT',
+          type,
           email: this.email,
         },
         this.secretKey,
@@ -28,7 +28,7 @@ export class JsonWentoken {
   
     setAccessToken(): boolean {
       try {
-        this.accessToken = this.genJwt(process.env.EXPIRESIN);
+        this.accessToken = this.genJwt('accessToken', process.env.EXPIRESIN);
       } catch (e) {
         throw new BadRequestException('accessToken발급에 실패했습니다.');
       }
@@ -37,7 +37,7 @@ export class JsonWentoken {
   
     setRefreshToken(): boolean {
       try {
-        this.refreshToken = this.genJwt(process.env.REFRESHEXPIRESIN);
+        this.refreshToken = this.genJwt('refreshToken', process.env.REFRESHEXPIRESIN);
       } catch (e) {
         throw new BadRequestException('refreshToken발급에 실패했습니다.');
       }

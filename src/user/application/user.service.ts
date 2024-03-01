@@ -2,18 +2,17 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/createUser.dto';
 import { User } from '../domain/user.entity';
-import { UserRepository } from '../repository/user.repository';
 import { RegisterFactory } from './factory/register/register.factory';
 import { UserInfo } from './builder/user.builder';
 import { SignInUserDto } from './dto/signInUser.dto';
 import { AuthFactory } from './factory/auth/auth.factory';
 import { AuthClient } from './factory/auth/auth.client';
+import { UserRepository } from '../repository/user.repository';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(UserRepository)
-    private userRepository: UserRepository,
+    private userRepository: UserRepository, // User 엔티티의 Repository 주입
     private readonly registerFactory: RegisterFactory,
     private readonly authFactory: AuthFactory
   ) {}
@@ -32,9 +31,7 @@ export class UserService {
     const auth = this.authFactory.getClient(user.socialType);
     auth.setUser(user);
     
-    const checkUser = await this.userRepository.findOne({
-      email: user.email,
-    });
+    const checkUser = await this.userRepository.findByEmail(user.email);
     if (!checkUser)
       throw new BadRequestException('가입이력이 없는 email입니다.');
 
@@ -57,5 +54,12 @@ export class UserService {
     .setSocialType(userInfo.socialType);
     
     return uInfo;
+  }
+
+  async getUser(): Promise<any> {
+    const a = 1;
+    const res = await this.userRepository.findAllUser();
+    const q = 1;
+    return null;
   }
 }
