@@ -1,9 +1,31 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeORMConfig } from './configs/typeorm.config';
+import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { UserModule } from './user/user.module';
+import databaseConfig from './database/config/database.config';
+import authConfig from './auth/config/auth.config';
+import appConfig from './config/app.config';
+import { ConfigModule } from '@nestjs/config';
+import { DataSource, DataSourceOptions } from 'typeorm';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(typeORMConfig), UserModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [
+        databaseConfig,
+        authConfig,
+        appConfig,
+      ],
+      envFilePath: ['.env'],
+    }),
+    TypeOrmModule.forRootAsync({
+      useClass: TypeOrmConfigService,
+      dataSourceFactory: async (options: DataSourceOptions) => {
+        return new DataSource(options).initialize();
+      },
+    }),
+    UserModule
+  ],
 })
 export class AppModule {}
