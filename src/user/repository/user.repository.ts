@@ -39,11 +39,8 @@ export class UserRepository extends Repository<User>{
     return await this.findOneBy({ email });
   }
 
-  async findAllUser(): Promise<any> {
-    const q= 1;
-    const res = await this.find();
-    const e= 1;
-    return res;
+  async findAllUser(): Promise<Promise<User[] | null> > {
+    return await this.find();
   }
 
 }

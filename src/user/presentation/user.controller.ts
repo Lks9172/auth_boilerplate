@@ -47,10 +47,7 @@ export class UserController {
   // }
 
   @Get('/')
-  async hello() {
-    console.log('1');
-    const a = await this.userService.getUser();
-    console.log('a');
-    return a;
+  async hello(): Promise<User[]|null> {
+    return await this.userService.getUser();
   }
 }

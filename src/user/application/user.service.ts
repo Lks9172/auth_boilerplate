@@ -56,10 +56,7 @@ export class UserService {
     return uInfo;
   }
 
-  async getUser(): Promise<any> {
-    const a = 1;
-    const res = await this.userRepository.findAllUser();
-    const q = 1;
-    return null;
+  async getUser(): Promise<User[] | null>  {
+    return await this.userRepository.findAllUser();
   }
 }
