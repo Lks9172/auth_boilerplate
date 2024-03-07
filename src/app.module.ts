@@ -5,8 +5,10 @@ import { UserModule } from './user/user.module';
 import databaseConfig from './database/config/database.config';
 import authConfig from './auth/config/auth.config';
 import appConfig from './config/app.config';
+import fileConfig from './files/config/file.config';
 import { ConfigModule } from '@nestjs/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
         databaseConfig,
         authConfig,
         appConfig,
+        fileConfig
       ],
       envFilePath: ['.env'],
     }),
@@ -25,7 +28,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
         return new DataSource(options).initialize();
       },
     }),
-    UserModule
+    UserModule,
   ],
 })
 export class AppModule {}
