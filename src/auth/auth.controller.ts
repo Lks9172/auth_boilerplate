@@ -20,6 +20,6 @@ export class AuthController {
   @Post('email/register')
   @HttpCode(HttpStatus.NO_CONTENT)
   async register(@Body() createUserDto: AuthRegisterLoginDto): Promise<void> {
-    return undefined;
+    return this.service.register(createUserDto);
   }
 }
