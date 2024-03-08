@@ -5,16 +5,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserService } from './application/user.service';
 import { UserController } from './presentation/user.controller';
 import { User } from './domain/user.entity';
-import { RegisterFactory } from './application/factory/register/register.factory';
-import { OriginRegister } from './application/factory/register/origin-register.client';
-import { NaverRegister } from './application/factory/register/naver-register.client';
-import { KakaoRegister } from './application/factory/register/kakao-register.client';
-import { GoogleRegister } from './application/factory/register/google-register.client';
-import { AuthFactory } from './application/factory/auth/auth.factory';
-import { OriginAuth } from './application/factory/auth/origin-auth.client';
-import { KakaoAuth } from './application/factory/auth/kakao-auth.client';
-import { NaverAuth } from './application/factory/auth/naver-auth.client';
-import { GoogleAuth } from './application/factory/auth/google-auth.client';
 import { UserRepository } from './repository/user.repository';
 import { TypeOrmExModule } from '../database/typeorm-ex.module';
 
@@ -33,17 +23,8 @@ import { TypeOrmExModule } from '../database/typeorm-ex.module';
   controllers: [UserController],
   providers: [
     UserService,
-    RegisterFactory,
-    OriginRegister,
-    NaverRegister,
-    KakaoRegister,
-    GoogleRegister,
-    AuthFactory,
-    OriginAuth,
-    KakaoAuth,
-    NaverAuth,
-    GoogleAuth,
-  ]
+  ],
+  exports: [UserService],
 })
 
 export class UserModule {}

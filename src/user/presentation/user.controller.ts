@@ -2,39 +2,34 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Post,
   Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { User } from '../domain/user.entity';
-import { CreateUserDto } from '../application/dto/createUser.dto';
+import { CreateUserDto } from '../application/dto/create-user.dto';
 import { UserService } from '../application/user.service';
 import { KakaoTokenGenerator, NaverTokenGenerator, GoogleTokenGenerator } from '../application/register';
 import { SignInUserDto } from '../application/dto/signInUser.dto';
 import { tLoginRes } from '../application/dto/types';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('user')
+@ApiTags('User')
+@Controller({
+  path: 'user',
+  version: '1',
+})
 export class UserController {
   constructor(private userService: UserService) {}
 
   @Post('/')
   @UsePipes(ValidationPipe)
-  signUp(@Body() user: CreateUserDto): Promise<User> {
-    const userInfo = this.userService.normalizeUser(user);
-    return this.userService.createUser(userInfo.socialType, userInfo);
-  }
-
-  @Post('/signin')
-  @UsePipes(ValidationPipe)
-  async signIn(@Body() user: SignInUserDto): Promise<tLoginRes> {
-    const auth = await this.userService.signIn(user);
-    const token = {
-      email: auth.user.email,
-      accessToken: auth.jwt.accessToken,
-      refreshToken: auth.jwt.refreshToken,
-    };
-    return token;
+  @HttpCode(HttpStatus.CREATED)
+  signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.userService.create(createUserDto);
   }
 
   // @Get('/')

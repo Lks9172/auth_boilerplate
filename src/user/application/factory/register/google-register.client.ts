@@ -1,35 +1,35 @@
-import { firstValueFrom } from 'rxjs';
-import { UserRegister } from './register.client';
-import { HttpService } from '@nestjs/axios';
-import { UserInfo } from '../../builder/user.builder';
+// import { firstValueFrom } from 'rxjs';
+// import { UserRegister } from './register.client';
+// import { HttpService } from '@nestjs/axios';
+// import { UserInfo } from '../../builder/user.builder';
 
-export class GoogleRegister implements UserRegister{
-  user: UserInfo;
-  private REQUEST_USER_INFO_URL = 'https://www.googleapis.com/oauth2/v1/userinfo';
-  private httpService= new HttpService();
+// export class GoogleRegister implements UserRegister{
+//   user: UserInfo;
+//   private REQUEST_USER_INFO_URL = 'https://www.googleapis.com/oauth2/v1/userinfo';
+//   private httpService= new HttpService();
 
-  setUser(user: UserInfo): void {
-    this.user = user;
-  }
+//   setUser(user: UserInfo): void {
+//     this.user = user;
+//   }
 
-  async register(): Promise<boolean> {
-      // 해당 토큰이 플랫폼에서 유효한지 확인
-      await this.getSocialInfo();
-      return true;
-  }
+//   async register(): Promise<boolean> {
+//       // 해당 토큰이 플랫폼에서 유효한지 확인
+//       await this.getSocialInfo();
+//       return true;
+//   }
 
-  async getSocialInfo(): Promise<void> {
-      const header = {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-          Authorization: `Bearer ${this.user.token}`,
-        },
-      };
+//   async getSocialInfo(): Promise<void> {
+//       const header = {
+//         headers: {
+//           'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+//           Authorization: `Bearer ${this.user.token}`,
+//         },
+//       };
   
-      const response = await firstValueFrom(
-        this.httpService.get(this.REQUEST_USER_INFO_URL, header),
-      );
+//       const response = await firstValueFrom(
+//         this.httpService.get(this.REQUEST_USER_INFO_URL, header),
+//       );
   
-      this.user.email = response.data.email;
-    }
-}
+//       this.user.email = response.data.email;
+//     }
+// }
