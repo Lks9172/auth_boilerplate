@@ -5,9 +5,9 @@ import {
   Controller,
   HttpStatus,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService } from '../application/auth.service';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
+import { AuthRegisterLoginDto } from '../dto/auth-register-login.dto';
 
 @ApiTags('Auth')
 @Controller({

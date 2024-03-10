@@ -13,7 +13,7 @@ import {
   } from 'typeorm';
   import * as bcrypt from 'bcryptjs';
   import { Exclude, Expose } from 'class-transformer';
-import { AuthProvidersEnum } from '../../auth/auth-providers.enum';
+import { AuthProvidersEnum } from '../../auth/domain/auth-providers.enum';
 import { FileEntity } from '../../files/entities/file.entity';
 import { Role } from '../../roles/entities/role.entity';
 import { Status } from '../../statuses/entities/status.entity';

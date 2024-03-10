@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
-import { UserService } from '../user/application/user.service';
+import { AuthRegisterLoginDto } from '../dto/auth-register-login.dto';
+import { UserService } from '../../user/application/user.service';
 import { ConfigService } from '@nestjs/config';
-import { Status } from '../statuses/entities/status.entity';
-import { StatusEnum } from '../statuses/statuses.enum';
-import { AllConfigType } from '../config/config.type';
+import { Status } from '../../statuses/entities/status.entity';
+import { StatusEnum } from '../../statuses/statuses.enum';
+import { AllConfigType } from '../../config/config.type';
+import { MailService } from '../../mail/application/mail.service';
 
 
 @Injectable()
@@ -13,6 +14,7 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     private userService: UserService,
+    private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
   ) {}
 
@@ -39,5 +41,12 @@ export class AuthService {
         }),
       },
     );
+
+    await this.mailService.userSignUp({
+      to: dto.email,
+      data: {
+        hash,
+      },
+    });
   }
 }

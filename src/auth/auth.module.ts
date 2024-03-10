@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
+import { AuthController } from './presentation/auth.controller';
+import { AuthService } from './application/auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { IsExist } from '../utils/validators/is-exists.validator';
 import { IsNotExist } from '../utils/validators/is-not-exists.validator';
 import { UserModule } from '../user/user.module';
+import { MailService } from '../mail/application/mail.service';
+import { MailerService } from '../mailer/application/mailer.service';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { UserModule } from '../user/user.module';
     IsExist,
     IsNotExist,
     AuthService,
+    MailService,
+    MailerService
   ],
   exports: [AuthService],
 })
