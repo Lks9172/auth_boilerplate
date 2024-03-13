@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from '../domain/user.entity';
-import { SignInUserDto } from './dto/signInUser.dto';
 import { UserRepository } from '../repository/user.repository';
+import { EntityCondition } from '../../utils/types/entity-condition.type';
+import { NullableType } from '../../utils/types/nullable.type';
 
 @Injectable()
 export class UserService {
@@ -19,5 +20,11 @@ export class UserService {
 
   async getUser(): Promise<User[] | null>  {
     return await this.userRepository.findAllUser();
+  }
+
+  findOne(fields: EntityCondition<User>): Promise<NullableType<User>> {
+    return this.userRepository.findOne({
+      where: fields,
+    });
   }
 }
