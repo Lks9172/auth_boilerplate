@@ -8,10 +8,12 @@ import { IsNotExist } from '../utils/validators/is-not-exists.validator';
 import { UserModule } from '../user/user.module';
 import { MailService } from '../mail/application/mail.service';
 import { MailerService } from '../mailer/application/mailer.service';
+import { SessionModule } from 'src/session/session.module';
 
 @Module({
   imports: [
     UserModule,
+    SessionModule,
     PassportModule,
     JwtModule.register({}),
   ],
@@ -21,7 +23,7 @@ import { MailerService } from '../mailer/application/mailer.service';
     IsNotExist,
     AuthService,
     MailService,
-    MailerService
+    MailerService,
   ],
   exports: [AuthService],
 })
