@@ -27,8 +27,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   public login(
     @Body() loginDto: AuthEmailLoginDto,
-  ): void {
-    return;
+  ): Promise<LoginResponseType> {
+    return this.service.validateLogin(loginDto);
   }
 
   @Post('email/register')

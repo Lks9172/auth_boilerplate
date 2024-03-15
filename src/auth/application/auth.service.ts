@@ -9,15 +9,87 @@ import { AllConfigType } from '../../config/config.type';
 import { MailService } from '../../mail/application/mail.service';
 import { User } from 'src/user/domain/user.entity';
 import { plainToClass } from 'class-transformer';
+import bcrypt from 'bcryptjs';
+import ms from 'ms';
+import { AuthProvidersEnum } from '../domain/auth-providers.enum';
+import { Session } from '../../session/entities/session.entity';
+import { SessionService } from '../../session/session.service';
+import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
+import { LoginResponseType } from '../types/login-response.type';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private userService: UserService,
+    private sessionService: SessionService,
     private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
   ) {}
+
+  async validateLogin(loginDto: AuthEmailLoginDto): Promise<LoginResponseType> {
+    const user = await this.userService.findOne({
+      email: loginDto.email,
+    });
+
+    if (!user) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            email: 'notFound',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    if (user.provider !== AuthProvidersEnum.email) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            email: `needLoginViaProvider:${user.provider}`,
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    const isValidPassword = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
+
+    if (!isValidPassword) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            password: 'incorrectPassword',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    const session = await this.sessionService.create({
+      user,
+    });
+
+    const { token, refreshToken, tokenExpires } = await this.getTokensData({
+      id: user.id,
+      role: user.role,
+      sessionId: session.id,
+    });
+
+    return {
+      refreshToken,
+      token,
+      tokenExpires,
+      user,
+    };
+  }
 
   async register(dto: AuthRegisterLoginDto): Promise<void> {
 
@@ -94,5 +166,50 @@ export class AuthService {
       id: StatusEnum.active,
     });
     await user.save();
+  }
+
+  private async getTokensData(data: {
+    id: User['id'];
+    role: User['role'];
+    sessionId: Session['id'];
+  }) {
+    const tokenExpiresIn = this.configService.getOrThrow('auth.expires', {
+      infer: true,
+    });
+
+    const tokenExpires = Date.now() + ms(tokenExpiresIn);
+
+    const [token, refreshToken] = await Promise.all([
+      await this.jwtService.signAsync(
+        {
+          id: data.id,
+          role: data.role,
+          sessionId: data.sessionId,
+        },
+        {
+          secret: this.configService.getOrThrow('auth.secret', { infer: true }),
+          expiresIn: tokenExpiresIn,
+        },
+      ),
+      await this.jwtService.signAsync(
+        {
+          sessionId: data.sessionId,
+        },
+        {
+          secret: this.configService.getOrThrow('auth.refreshSecret', {
+            infer: true,
+          }),
+          expiresIn: this.configService.getOrThrow('auth.refreshExpires', {
+            infer: true,
+          }),
+        },
+      ),
+    ]);
+
+    return {
+      token,
+      refreshToken,
+      tokenExpires,
+    };
   }
 }
