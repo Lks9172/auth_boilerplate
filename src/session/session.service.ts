@@ -29,9 +29,11 @@ export class SessionService {
     user?: Pick<User, 'id'>;
     excludeId?: Session['id'];
   }): Promise<void> {
+    const idCondition = criteria.id ? { id: criteria.id } : excludeId ? { id: Not(excludeId) } : {};
+
     await this.sessionRepository.softDelete({
       ...criteria,
-      id: criteria.id ? criteria.id : excludeId ? Not(excludeId) : undefined,
+      ...idCondition,
     });
   }
 }

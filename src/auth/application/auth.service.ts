@@ -235,6 +235,58 @@ export class AuthService {
     };
   }
 
+
+  async resetPassword(hash: string, password: string): Promise<void> {
+    let userId: User['id'];
+
+    try {
+      const jwtData = await this.jwtService.verifyAsync<{
+        forgotUserId: User['id'];
+      }>(hash, {
+        secret: this.configService.getOrThrow('auth.forgotSecret', {
+          infer: true,
+        }),
+      });
+
+      userId = jwtData.forgotUserId;
+    } catch {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            hash: 'invalidHash',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    const user = await this.userService.findOne({
+      id: userId,
+    });
+
+    if (!user) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            hash: 'notFound',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    user.password = password;
+
+    await this.sessionService.softDelete({
+      user: {
+        id: user.id,
+      },
+    });
+    await user.save();
+  }
+
   private async getTokensData(data: {
     id: User['id'];
     role: User['role'];
