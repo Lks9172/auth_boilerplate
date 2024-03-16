@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, FindOneOptions, FindOptions, Not, Repository } from 'typeorm';
+import { DeepPartial, FindOneOptions, Not} from 'typeorm';
 import { Session } from './entities/session.entity';
 import { SessionRepository } from './repository/session.repository';
 import { User } from '../user/domain/user.entity';
