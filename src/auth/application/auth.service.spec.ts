@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './application/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
-import { UserService } from '../user/application/user.service';
-import { User } from '../user/domain/user.entity';
+import { AuthService } from './auth.service';
+import { UserService } from '../../user/application/user.service';
+import { User } from '../../user/domain/user.entity';
 
 describe('AuthService', () => {
   let authService: AuthService;

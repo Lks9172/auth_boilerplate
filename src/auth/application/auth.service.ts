@@ -240,4 +240,10 @@ export class AuthService {
       tokenExpires,
     };
   }
+
+  async logout(data: Pick<JwtRefreshPayloadType, 'sessionId'>) {
+    return this.sessionService.softDelete({
+      id: data.sessionId,
+    });
+  }
 }

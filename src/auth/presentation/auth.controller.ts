@@ -60,4 +60,14 @@ export class AuthController {
       sessionId: request.user.sessionId,
     });
   }
+
+  @ApiBearerAuth()
+  @Post('logout')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.NO_CONTENT)
+  public async logout(@Request() request): Promise<void> {
+    await this.service.logout({
+      sessionId: request.user.sessionId,
+    });
+  }
 }

@@ -24,6 +24,7 @@ import { MailModule } from 'src/mail/mail.module';
     IsExist,
     IsNotExist,
     AuthService,
+    JwtStrategy,
     JwtRefreshStrategy,
   ],
   exports: [AuthService],
