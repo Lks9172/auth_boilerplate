@@ -17,6 +17,7 @@ import { AuthConfirmEmailDto } from '../application/dto/auth-confirm-email.dto';
 import { AuthEmailLoginDto } from '../application/dto/auth-email-login.dto';
 import { LoginResponseType } from '../types/login-response.type';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthForgotPasswordDto } from '../application/dto/auth-forgot-password.dto';
 
 @ApiTags('Auth')
 @Controller({
@@ -46,6 +47,14 @@ export class AuthController {
     @Query() confirmEmailDto: AuthConfirmEmailDto,
   ): Promise<void> {
     return this.service.confirmEmail(confirmEmailDto.hash);
+  }
+
+  @Post('forgot/password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async forgotPassword(
+    @Body() forgotPasswordDto: AuthForgotPasswordDto,
+  ): Promise<void> {
+    return this.service.forgotPassword(forgotPasswordDto.email);
   }
 
   @ApiBearerAuth()
