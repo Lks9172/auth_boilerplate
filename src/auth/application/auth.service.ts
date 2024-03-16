@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
 import { UserService } from '../../user/application/user.service';
@@ -16,6 +16,7 @@ import { Session } from '../../session/entities/session.entity';
 import { SessionService } from '../../session/session.service';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import { LoginResponseType } from '../types/login-response.type';
+import { JwtRefreshPayloadType } from '../types/jwt-refresh-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -166,6 +167,33 @@ export class AuthService {
       id: StatusEnum.active,
     });
     await user.save();
+  }
+
+
+  async refreshToken(
+    data: Pick<JwtRefreshPayloadType, 'sessionId'>,
+  ): Promise<Omit<LoginResponseType, 'user'>> {
+    const session = await this.sessionService.findOne({
+      where: {
+        id: data.sessionId,
+      },
+    });
+
+    if (!session) {
+      throw new UnauthorizedException();
+    }
+
+    const { token, refreshToken, tokenExpires } = await this.getTokensData({
+      id: session.user.id,
+      role: session.user.role,
+      sessionId: session.id,
+    });
+
+    return {
+      token,
+      refreshToken,
+      tokenExpires,
+    };
   }
 
   private async getTokensData(data: {

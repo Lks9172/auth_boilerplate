@@ -6,15 +6,17 @@ import { JwtModule } from '@nestjs/jwt';
 import { IsExist } from '../utils/validators/is-exists.validator';
 import { IsNotExist } from '../utils/validators/is-not-exists.validator';
 import { UserModule } from '../user/user.module';
-import { MailService } from '../mail/application/mail.service';
-import { MailerService } from '../mailer/application/mailer.service';
 import { SessionModule } from 'src/session/session.module';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
     UserModule,
     SessionModule,
     PassportModule,
+    MailModule,
     JwtModule.register({}),
   ],
   controllers: [AuthController],
@@ -22,8 +24,7 @@ import { SessionModule } from 'src/session/session.module';
     IsExist,
     IsNotExist,
     AuthService,
-    MailService,
-    MailerService,
+    JwtRefreshStrategy,
   ],
   exports: [AuthService],
 })
