@@ -158,7 +158,16 @@ export class AuthService {
       }
       await this.userService.update(user.id, user);
     } else if (userByEmail) {
-      user = userByEmail;
+      throw new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            email: 'email already exists with a different provider.',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+      // user = userByEmail;
     } else {
       const role = plainToClass(Role, {
         id: RoleEnum.user,
