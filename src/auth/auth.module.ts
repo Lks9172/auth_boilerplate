@@ -9,7 +9,8 @@ import { UserModule } from '../user/user.module';
 import { SessionModule } from 'src/session/session.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
-import { MailModule } from 'src/mail/mail.module';
+import { MailModule } from '../mail/mail.module';
+import { OAuthModule } from '../oauth/oauth.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { MailModule } from 'src/mail/mail.module';
     SessionModule,
     PassportModule,
     MailModule,
+    OAuthModule,
     JwtModule.register({}),
   ],
   controllers: [AuthController],

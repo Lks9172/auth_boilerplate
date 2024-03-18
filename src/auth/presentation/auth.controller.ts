@@ -19,6 +19,9 @@ import { LoginResponseType } from '../types/login-response.type';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthForgotPasswordDto } from '../application/dto/auth-forgot-password.dto';
 import { AuthResetPasswordDto } from '../application/dto/auth-reset-password.dto';
+import { OAuthGoogleLoginDto } from '../../oauth/dto/oauth-google-login.dto';
+import { OAuthFactory } from '../../oauth/factories/oauth.factory';
+import { AuthProvidersEnum } from '../domain/auth-providers.enum';
 
 @ApiTags('Auth')
 @Controller({
@@ -26,7 +29,10 @@ import { AuthResetPasswordDto } from '../application/dto/auth-reset-password.dto
   version: '1',
 })
 export class AuthController {
-  constructor(private readonly service: AuthService) {}
+  constructor(
+    private readonly service: AuthService,
+    private readonly oAuthFactory: OAuthFactory,
+  ) {}
 
   @Post('email/login')
   @HttpCode(HttpStatus.OK)
@@ -89,4 +95,21 @@ export class AuthController {
       sessionId: request.user.sessionId,
     });
   }
+
+  @SerializeOptions({
+    groups: ['me'],
+  })
+  @Post('social/login')
+  @HttpCode(HttpStatus.OK)
+  async socailLogin(
+    @Body() loginDto: OAuthGoogleLoginDto,
+  ): Promise<LoginResponseType> {
+    const provider: AuthProvidersEnum = AuthProvidersEnum[loginDto.social as keyof typeof AuthProvidersEnum];
+
+    const socialService = this.oAuthFactory.getOAuthService(provider);
+    const socialData = await socialService.getProfileByToken(loginDto);
+
+    return this.service.validateSocialLogin(loginDto.social, socialData);
+  }
+
 }
