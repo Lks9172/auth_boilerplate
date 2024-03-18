@@ -105,7 +105,7 @@ export class AuthController {
     @Body() loginDto: OAuthGoogleLoginDto,
   ): Promise<LoginResponseType> {
     const provider: AuthProvidersEnum = AuthProvidersEnum[loginDto.social as keyof typeof AuthProvidersEnum];
-
+    
     const socialService = this.oAuthFactory.getOAuthService(provider);
     const socialData = await socialService.getProfileByToken(loginDto);
 

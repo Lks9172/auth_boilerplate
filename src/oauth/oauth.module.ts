@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { OAuthFactory } from './factories/oauth.factory';
 import { OAuthGoogleService } from './application/oauth-google.service';
+import { OAuthKakaoService } from './application/oauth-kakao.service';
 
 
 @Module({
@@ -9,7 +10,8 @@ import { OAuthGoogleService } from './application/oauth-google.service';
   controllers: [],
   providers: [
     OAuthFactory,
-    OAuthGoogleService
+    OAuthGoogleService,
+    OAuthKakaoService
   ],
   exports: [OAuthFactory],
 })
