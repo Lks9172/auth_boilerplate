@@ -12,6 +12,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { MailerModule } from './mailer/mailer.module';
+import googleConfig from './oauth/config/google/google.config';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { MailerModule } from './mailer/mailer.module';
         authConfig,
         appConfig,
         mailConfig,
-        fileConfig
+        fileConfig,
+        googleConfig,
       ],
       envFilePath: ['.env'],
     }),
