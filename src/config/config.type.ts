@@ -4,6 +4,7 @@ import { AuthConfig } from '../auth/config/auth-config.type';
 import { FileConfig } from '../files/config/file-config.type';
 import { MailConfig } from '../mail/config/mail-config.type';
 import { GoogleConfig } from '../oauth/config/google/google-config.type';
+import { KakaoConfig } from '../oauth/config/kakao/kakao-config.type';
 
 export type AllConfigType = {
   app: AppConfig;
@@ -12,4 +13,5 @@ export type AllConfigType = {
   file: FileConfig;
   mail: MailConfig;
   google: GoogleConfig;
+  kakao: KakaoConfig;
 };

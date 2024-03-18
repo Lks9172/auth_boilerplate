@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { MailerModule } from './mailer/mailer.module';
 import googleConfig from './oauth/config/google/google.config';
+import kakaoConfig from './oauth/config/kakao/kakao.config';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import googleConfig from './oauth/config/google/google.config';
         mailConfig,
         fileConfig,
         googleConfig,
+        kakaoConfig,
       ],
       envFilePath: ['.env'],
     }),
