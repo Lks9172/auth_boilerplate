@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { OAuthFactory } from './factories/oauth.factory';
-import { OAuthGoogleService } from './oauth-google.service';
+import { OAuthGoogleService } from './application/oauth-google.service';
 
 
 @Module({

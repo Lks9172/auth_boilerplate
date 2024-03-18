@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OAuthInterface } from '../interface/oauth.interface';
-import { OAuthGoogleService } from '../oauth-google.service';
+import { OAuthGoogleService } from '../application/oauth-google.service';
 import { AuthProvidersEnum } from '../../auth/domain/auth-providers.enum';
 
 @Injectable()
