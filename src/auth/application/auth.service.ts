@@ -17,6 +17,8 @@ import { SessionService } from '../../session/session.service';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import { LoginResponseType } from '../types/login-response.type';
 import { JwtRefreshPayloadType } from '../types/jwt-refresh-payload.type';
+import { Role } from 'src/roles/entities/role.entity';
+import { RoleEnum } from 'src/roles/roles.enum';
 
 @Injectable()
 export class AuthService {
@@ -97,6 +99,9 @@ export class AuthService {
     const user = await this.userService.create({
       ...dto,
       email: dto.email,
+      role: {
+        id: RoleEnum.user,
+      } as Role,
       status: {
         id: StatusEnum.inactive,
       } as Status,
