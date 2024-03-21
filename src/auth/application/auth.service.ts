@@ -21,6 +21,7 @@ import { SocialInterface } from 'src/social/interfaces/social.interface';
 import { NullableType } from 'src/utils/types/nullable.type';
 import { Role } from 'src/roles/entities/role.entity';
 import { RoleEnum } from 'src/roles/roles.enum';
+import { JwtPayloadType } from '../strategies/types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -386,6 +387,13 @@ export class AuthService {
       },
     });
     await user.save();
+  }
+
+
+  async findMe(userJwtPayload: JwtPayloadType): Promise<NullableType<User>> {
+    return this.userService.findOne({
+      id: userJwtPayload.id,
+    });
   }
 
   private async getTokensData(data: {

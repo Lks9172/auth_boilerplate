@@ -22,6 +22,8 @@ import { AuthResetPasswordDto } from '../application/dto/auth-reset-password.dto
 import { OAuthGoogleLoginDto } from '../../oauth/dto/oauth-google-login.dto';
 import { OAuthFactory } from '../../oauth/factories/oauth.factory';
 import { AuthProvidersEnum } from '../domain/auth-providers.enum';
+import { NullableType } from 'src/utils/types/nullable.type';
+import { User } from 'src/user/domain/user.entity';
 
 @ApiTags('Auth')
 @Controller({
@@ -71,6 +73,17 @@ export class AuthController {
       resetPasswordDto.hash,
       resetPasswordDto.password,
     );
+  }
+
+  @ApiBearerAuth()
+  @SerializeOptions({
+    groups: ['me'],
+  })
+  @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  public findMe(@Request() request): Promise<NullableType<User>> {
+    return this.service.findMe(request.user);
   }
 
   @ApiBearerAuth()
