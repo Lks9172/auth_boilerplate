@@ -8,7 +8,8 @@ import {
   Query,
   Get,
   UseGuards,
-  SerializeOptions
+  SerializeOptions,
+  Patch
 } from '@nestjs/common';
 import { AuthService } from '../application/auth.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -24,6 +25,7 @@ import { OAuthFactory } from '../../oauth/factories/oauth.factory';
 import { AuthProvidersEnum } from '../domain/auth-providers.enum';
 import { NullableType } from 'src/utils/types/nullable.type';
 import { User } from 'src/user/domain/user.entity';
+import { AuthUpdateDto } from '../application/dto/auth-update.dto';
 
 @ApiTags('Auth')
 @Controller({
@@ -109,6 +111,21 @@ export class AuthController {
     });
   }
 
+
+  @ApiBearerAuth()
+  @SerializeOptions({
+    groups: ['me'],
+  })
+  @Patch('me')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  public update(
+    @Request() request,
+    @Body() userDto: AuthUpdateDto,
+  ): Promise<NullableType<User>> {
+    return this.service.update(request.user, userDto);
+  }
+   
   @SerializeOptions({
     groups: ['me'],
   })

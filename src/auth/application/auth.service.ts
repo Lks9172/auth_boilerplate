@@ -22,6 +22,7 @@ import { NullableType } from 'src/utils/types/nullable.type';
 import { Role } from 'src/roles/entities/role.entity';
 import { RoleEnum } from 'src/roles/roles.enum';
 import { JwtPayloadType } from '../strategies/types/jwt-payload.type';
+import { AuthUpdateDto } from './dto/auth-update.dto';
 
 @Injectable()
 export class AuthService {
@@ -391,6 +392,71 @@ export class AuthService {
 
 
   async findMe(userJwtPayload: JwtPayloadType): Promise<NullableType<User>> {
+    return this.userService.findOne({
+      id: userJwtPayload.id,
+    });
+  }
+
+  async update(
+    userJwtPayload: JwtPayloadType,
+    userDto: AuthUpdateDto,
+  ): Promise<NullableType<User>> {
+    if (userDto.password) {
+      if (!userDto.oldPassword) {
+        throw new HttpException(
+          {
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            errors: {
+              oldPassword: 'missingOldPassword',
+            },
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
+      const currentUser = await this.userService.findOne({
+        id: userJwtPayload.id,
+      });
+
+      if (!currentUser) {
+        throw new HttpException(
+          {
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            errors: {
+              user: 'userNotFound',
+            },
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
+      const isValidOldPassword = await bcrypt.compare(
+        userDto.oldPassword,
+        currentUser.password,
+      );
+
+      if (!isValidOldPassword) {
+        throw new HttpException(
+          {
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            errors: {
+              oldPassword: 'incorrectOldPassword',
+            },
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      } else {
+        await this.sessionService.softDelete({
+          user: {
+            id: currentUser.id,
+          },
+          excludeId: userJwtPayload.sessionId,
+        });
+      }
+    }
+
+    await this.userService.update(userJwtPayload.id, userDto);
+
     return this.userService.findOne({
       id: userJwtPayload.id,
     });
