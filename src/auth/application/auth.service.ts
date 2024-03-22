@@ -338,6 +338,9 @@ export class AuthService {
     };
   }
 
+  async softDelete(user: User): Promise<void> {
+    await this.userService.softDelete(user.id);
+  }
 
   async resetPassword(hash: string, password: string): Promise<void> {
     let userId: User['id'];

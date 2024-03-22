@@ -37,4 +37,8 @@ export class UserService {
       }),
     );
   }
+
+  async softDelete(id: User['id']): Promise<void> {
+    await this.userRepository.softDelete(id);
+  }
 }

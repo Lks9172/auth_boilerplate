@@ -9,7 +9,8 @@ import {
   Get,
   UseGuards,
   SerializeOptions,
-  Patch
+  Patch,
+  Delete
 } from '@nestjs/common';
 import { AuthService } from '../application/auth.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -111,7 +112,6 @@ export class AuthController {
     });
   }
 
-
   @ApiBearerAuth()
   @SerializeOptions({
     groups: ['me'],
@@ -124,6 +124,14 @@ export class AuthController {
     @Body() userDto: AuthUpdateDto,
   ): Promise<NullableType<User>> {
     return this.service.update(request.user, userDto);
+  }
+
+  @ApiBearerAuth()
+  @Delete('me')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.NO_CONTENT)
+  public async delete(@Request() request): Promise<void> {
+    return this.service.softDelete(request.user);
   }
    
   @SerializeOptions({
