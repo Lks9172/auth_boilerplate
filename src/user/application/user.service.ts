@@ -4,6 +4,7 @@ import { User } from '../domain/user.entity';
 import { UserRepository } from '../repository/user.repository';
 import { EntityCondition } from '../../utils/types/entity-condition.type';
 import { NullableType } from '../../utils/types/nullable.type';
+import { DeepPartial } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -26,5 +27,14 @@ export class UserService {
     return this.userRepository.findOne({
       where: fields,
     });
+  }
+
+  update(id: User['id'], payload: DeepPartial<User>): Promise<User> {
+    return this.userRepository.save(
+      this.userRepository.create({
+        id,
+        ...payload,
+      }),
+    );
   }
 }
