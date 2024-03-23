@@ -7,6 +7,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Patch,
   SerializeOptions,
   UseGuards,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import { UserService } from '../application/user.service';
 import { RolesGuard } from '../../roles/roles.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { NullableType } from '../../utils/types/nullable.type';
+import { UpdateUserDto } from '../application/dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../../roles/roles.decorator';
 import { RoleEnum } from '../../roles/roles.enum';
@@ -57,4 +59,15 @@ export class UserController {
     return this.userService.findOne({ id: id });
   }
 
+  @SerializeOptions({
+    groups: ['admin'],
+  })
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateProfileDto: UpdateUserDto,
+  ): Promise<User> {
+    return this.userService.update(id, updateProfileDto);
+  }
 }
