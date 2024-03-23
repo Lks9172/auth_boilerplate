@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Post,
   Patch,
+  Delete,
   SerializeOptions,
   UseGuards,
 } from '@nestjs/common';
@@ -69,5 +70,11 @@ export class UserController {
     @Body() updateProfileDto: UpdateUserDto,
   ): Promise<User> {
     return this.userService.update(id, updateProfileDto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.userService.softDelete(id);
   }
 }
