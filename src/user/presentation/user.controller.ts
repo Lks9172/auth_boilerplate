@@ -5,19 +5,22 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Query,
-  UsePipes,
-  ValidationPipe,
+  SerializeOptions,
+  UseGuards,
 } from '@nestjs/common';
 import { User } from '../domain/user.entity';
 import { CreateUserDto } from '../application/dto/create-user.dto';
 import { UserService } from '../application/user.service';
-import { KakaoTokenGenerator, NaverTokenGenerator, GoogleTokenGenerator } from '../application/register';
-import { SignInUserDto } from '../application/dto/signInUser.dto';
-import { tLoginRes } from '../application/dto/types';
-import { ApiTags } from '@nestjs/swagger';
+import { RolesGuard } from '../../roles/roles.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from '../../roles/roles.decorator';
+import { RoleEnum } from '../../roles/roles.enum';
 
+@ApiBearerAuth()
+@Roles(RoleEnum.admin)
 @ApiTags('User')
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller({
   path: 'user',
   version: '1',
@@ -25,22 +28,18 @@ import { ApiTags } from '@nestjs/swagger';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Post('/')
-  @UsePipes(ValidationPipe)
+  @SerializeOptions({
+    groups: ['admin'],
+  })
+  @Post()
   @HttpCode(HttpStatus.CREATED)
-  signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.userService.create(createUserDto);
+  create(@Body() createProfileDto: CreateUserDto): Promise<User> {
+    return this.userService.create(createProfileDto);
   }
 
-  // @Get('/')
-  // @UsePipes(ValidationPipe)
-  // async lo(@Query('code') code: string): Promise<string> {
-  //   const generator = new GoogleTokenGenerator(code);
-  //   const token = await generator.verifyOauthMember();
-  //   console.log(token);
-  //   return token;
-  // }
-
+  @SerializeOptions({
+    groups: ['admin'],
+  })
   @Get('/')
   async hello(): Promise<User[]|null> {
     return await this.userService.getUser();
