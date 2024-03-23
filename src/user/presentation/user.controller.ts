@@ -4,6 +4,8 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseIntPipe,
   Post,
   SerializeOptions,
   UseGuards,
@@ -13,6 +15,7 @@ import { CreateUserDto } from '../application/dto/create-user.dto';
 import { UserService } from '../application/user.service';
 import { RolesGuard } from '../../roles/roles.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { NullableType } from '../../utils/types/nullable.type';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../../roles/roles.decorator';
 import { RoleEnum } from '../../roles/roles.enum';
@@ -44,4 +47,14 @@ export class UserController {
   async hello(): Promise<User[]|null> {
     return await this.userService.getUser();
   }
+
+  @SerializeOptions({
+    groups: ['admin'],
+  })
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<NullableType<User>> {
+    return this.userService.findOne({ id: id });
+  }
+
 }
