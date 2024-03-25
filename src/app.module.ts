@@ -15,6 +15,7 @@ import { MailerModule } from './mailer/mailer.module';
 import googleConfig from './oauth/config/google/google.config';
 import kakaoConfig from './oauth/config/kakao/kakao.config';
 import naverConfig from './oauth/config/naver/naver.config';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import naverConfig from './oauth/config/naver/naver.config';
       },
     }),
     UserModule,
+    FilesModule,
     AuthModule,
     MailModule,
     MailerModule
