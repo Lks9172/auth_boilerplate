@@ -1,9 +1,12 @@
 import {
   Controller,
+  Get,
+  Param,
   Post,
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  Response
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -38,5 +41,10 @@ export class FilesController {
     @UploadedFile() file: Express.Multer.File | Express.MulterS3.File,
   ) {
     return this.filesService.uploadFile(file);
+  }
+
+  @Get(':path')
+  download(@Param('path') path, @Response() response) {
+    return response.sendFile(path, { root: './files' });
   }
 }
