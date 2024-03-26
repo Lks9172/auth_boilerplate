@@ -51,7 +51,7 @@ describe('AuthService', () => {
         {
           provide: JwtService,
           useValue: {
-            signAsync: jest.fn().mockResolvedValue('testToken'),
+            signAsync: jest.fn(),
           },
         },
         {
@@ -120,6 +120,7 @@ describe('AuthService', () => {
     beforeEach(async () => {
       jest.spyOn(mailerService, 'sendMail').mockImplementation(() => Promise.resolve());
       jest.spyOn(userService, 'create').mockResolvedValue(new MockUser() as unknown as User);
+      jest.spyOn(jwtService, 'signAsync').mockResolvedValue('testToken');
     });
 
     it('should be defined', () => {
@@ -141,10 +142,7 @@ describe('AuthService', () => {
       await authService.register(authRegisterLoginDto);
 
       expect(userService.create).toBeCalledWith(createUserDto);
-      expect(jwtService.signAsync).toBeCalledWith(
-        signOptions.payload, 
-        signOptions.options
-        );
+      expect(jwtService.signAsync).toBeCalledWith(signOptions.payload, signOptions.options);
       expect(mailService.userSignUp).toBeCalledWith({
         to: authRegisterLoginDto.email,
         data: {
@@ -153,7 +151,7 @@ describe('AuthService', () => {
       });
     });
 
-    it('should register a new user and return a undefined', async () => {
+    it('check return the correct value', async () => {
       const result = await authService.register(authRegisterLoginDto);
       expect(result).toEqual(undefined);
     });
