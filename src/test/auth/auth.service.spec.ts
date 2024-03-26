@@ -96,6 +96,11 @@ describe('AuthService', () => {
       jest.spyOn(mailerService, 'sendMail').mockImplementation(() => Promise.resolve());
       jest.spyOn(userService, 'create').mockResolvedValue(new MockUser() as unknown as User);
     });
+
+    it('should be defined', () => {
+      expect(authService.register).toBeDefined();
+    });
+
     it('should register a new user and return a undefined', async () => {
       const authRegisterLoginDto: AuthRegisterLoginDto = {
         email: 'test@example.com',
