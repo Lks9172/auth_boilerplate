@@ -95,6 +95,27 @@ describe('AuthService', () => {
       firstName: 'John',
       lastName: 'Doe',
     };
+    const createUserDto = {
+      email: 'test@example.com',
+      password: 'hashedpassword',
+      firstName: 'John',
+      lastName: 'Doe',
+      role: {
+        id: 2,
+      },
+      status: {
+        id: 2,
+      },
+    };
+    const signOptions = {
+      payload: {
+        confirmEmailUserId: 1,
+      },
+      options: {
+        secret: 'Secret',
+        expiresIn: '1d',
+      },
+    };
 
     beforeEach(async () => {
       jest.spyOn(mailerService, 'sendMail').mockImplementation(() => Promise.resolve());
@@ -114,6 +135,22 @@ describe('AuthService', () => {
       expect(userService.create).toBeCalledTimes(1);
       expect(jwtService.signAsync).toBeCalledTimes(1);
       expect(mailService.userSignUp).toBeCalledTimes(1);
+    });
+
+    it('check called with parameter', async () => {
+      await authService.register(authRegisterLoginDto);
+
+      expect(userService.create).toBeCalledWith(createUserDto);
+      expect(jwtService.signAsync).toBeCalledWith(
+        signOptions.payload, 
+        signOptions.options
+        );
+      expect(mailService.userSignUp).toBeCalledWith({
+        to: authRegisterLoginDto.email,
+        data: {
+          hash: 'testToken'
+        }
+      });
     });
 
     it('should register a new user and return a undefined', async () => {
