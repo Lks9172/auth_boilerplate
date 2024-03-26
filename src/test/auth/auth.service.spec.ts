@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthRegisterLoginDto } from '../../auth/application/dto/auth-register-login.dto';
 import { AuthService } from '../../auth/application/auth.service';
@@ -14,6 +14,12 @@ import MockUser from '../utils/mock-user';
 
 describe('AuthService', () => {
   let authService: AuthService;
+  let userService: UserService;
+  let mailService: MailService;
+  let mailerService: MailerService;
+  let sessionService: SessionService;
+  let configService: ConfigService;
+
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,7 +36,7 @@ describe('AuthService', () => {
         {
           provide: UserService,
           useValue: {
-            create: jest.fn().mockResolvedValue(MockUser),
+            create: jest.fn(), 
           },
         },
         {
@@ -41,13 +47,18 @@ describe('AuthService', () => {
         },
         {
           provide: SessionService,
-          useValue: {
-          },
+          useValue: {},
         },
         {
           provide: JwtService,
           useValue: {
             signAsync: jest.fn().mockResolvedValue('testToken'),
+          },
+        },
+        {
+          provide: MailerService,
+          useValue: {
+            sendMail: jest.fn()
           },
         },
         {
@@ -68,27 +79,33 @@ describe('AuthService', () => {
             save: jest.fn().mockResolvedValue(new MockUser()),
           },
         },
-        {
-          provide: MailerService,
-          useValue: {
-            sendMail: jest.fn(),
-          },
-        },
       ],
     }).compile();
 
     authService = module.get<AuthService>(AuthService);
+    userService = module.get<UserService>(UserService);
+    mailService = module.get<MailService>(MailService);
+    mailerService = module.get<MailerService>(MailerService);
+    sessionService = module.get<SessionService>(SessionService);
+    configService = module.get<ConfigService>(ConfigService);
+
   });
 
-  it('should register a new user and return a undefined', async () => {
-    const authRegisterLoginDto: AuthRegisterLoginDto = {
-      email: 'test@example.com',
-      password: 'hashedpassword',
-      firstName: 'John',
-      lastName: 'Doe',
-    };
+  describe('register', () => {
+    beforeEach(async () => {
+      jest.spyOn(mailerService, 'sendMail').mockImplementation(() => Promise.resolve());
+      jest.spyOn(userService, 'create').mockResolvedValue(new MockUser() as unknown as User);
+    });
+    it('should register a new user and return a undefined', async () => {
+      const authRegisterLoginDto: AuthRegisterLoginDto = {
+        email: 'test@example.com',
+        password: 'hashedpassword',
+        firstName: 'John',
+        lastName: 'Doe',
+      };
 
-    const result = await authService.register(authRegisterLoginDto);
-    expect(result).toEqual(undefined);
+      const result = await authService.register(authRegisterLoginDto);
+      expect(result).toEqual(undefined);
+    });
   });
 });
