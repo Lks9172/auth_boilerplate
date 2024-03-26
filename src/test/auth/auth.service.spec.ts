@@ -101,6 +101,10 @@ describe('AuthService', () => {
       expect(authService.register).toBeDefined();
     });
 
+    it('type check', () => {
+      expect(typeof authService.register).toBe('function');
+    });
+
     it('should register a new user and return a undefined', async () => {
       const authRegisterLoginDto: AuthRegisterLoginDto = {
         email: 'test@example.com',
