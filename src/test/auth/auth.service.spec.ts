@@ -181,6 +181,24 @@ describe('AuthService', () => {
 
       expect(res).toStrictEqual(error422Provider);
     });
+
+    it('check match user\'s password', async () => {
+      const error422Pw = new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            password: 'incorrectPassword',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+      bcrypt.compare = jest.fn().mockResolvedValue(false);
+      
+      const res = await authService.validateLogin(loginDto)
+      .catch((e) => e);
+
+      expect(res).toStrictEqual(error422Pw);
+    });
   });
 
   describe('register', () => {
