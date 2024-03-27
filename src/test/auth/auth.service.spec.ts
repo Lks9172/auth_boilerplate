@@ -14,6 +14,7 @@ import MockUser from '../utils/mock-user';
 import bcrypt from 'bcryptjs';
 import MockSession from '../utils/mock-session';
 import { Session } from '../../session/entities/session.entity';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 jest.mock('bcryptjs', () => ({
   compare: jest.fn(),
@@ -142,6 +143,24 @@ describe('AuthService', () => {
       expect(userService.findOne).toBeCalledWith({email: loginDto.email});
       expect(bcrypt.compare).toBeCalledWith(loginDto.password, user.password);
       expect(sessionService.create).toBeCalledWith({user});
+    });
+
+    it('check Can\'t find user with email', async () => {
+      const error_422 = new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            email: 'notFound',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+      
+      jest.spyOn(userService, 'findOne').mockResolvedValue(null);
+      const res = await authService.validateLogin(loginDto)
+      .catch((e) => e);
+      
+      expect(res).toStrictEqual(error_422);
     });
   });
 
