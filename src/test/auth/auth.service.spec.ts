@@ -114,6 +114,10 @@ describe('AuthService', () => {
         }
       });
     });
+
+    it('should be defined', () => {
+      expect(authService.validateLogin).toBeDefined();
+    });
   });
 
   describe('register', () => {
