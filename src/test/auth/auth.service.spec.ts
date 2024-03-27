@@ -130,9 +130,18 @@ describe('AuthService', () => {
 
     it('check called time', async () => {
       await authService.validateLogin(loginDto);
+
       expect(userService.findOne).toBeCalledTimes(1);
       expect(bcrypt.compare).toBeCalledTimes(1);
       expect(sessionService.create).toBeCalledTimes(1);
+    });
+
+    it('check called with parameter', async () => {
+      await authService.validateLogin(loginDto);
+
+      expect(userService.findOne).toBeCalledWith({email: loginDto.email});
+      expect(bcrypt.compare).toBeCalledWith(loginDto.password, user.password);
+      expect(sessionService.create).toBeCalledWith({user});
     });
   });
 
