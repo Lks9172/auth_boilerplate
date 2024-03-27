@@ -118,6 +118,10 @@ describe('AuthService', () => {
     it('should be defined', () => {
       expect(authService.validateLogin).toBeDefined();
     });
+
+    it('type check', () => {
+      expect(typeof authService.validateLogin).toBe('function');
+    });
   });
 
   describe('register', () => {
