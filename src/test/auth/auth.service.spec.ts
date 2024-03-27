@@ -76,7 +76,8 @@ describe('AuthService', () => {
             get: jest.fn(),
             getOrThrow: jest.fn().mockImplementation((key) => {
               if (key === 'auth.confirmEmailSecret') return 'Secret';
-              if (key === 'auth.confirmEmailExpires') return '1d'; // 예시 값
+              if (key === 'auth.confirmEmailExpires') return '1d';
+              if (key === 'auth.expires') return '30m';
             }),
           },
         },
@@ -100,6 +101,10 @@ describe('AuthService', () => {
 
   describe('validateLogin', () => {
     const user = new MockUser() as unknown as User;
+    const loginDto = {
+      email: user.email as string,
+      password: user.password
+    };
     const session = new MockSession() as unknown as Session;
     
     beforeEach(async () => {
@@ -121,6 +126,13 @@ describe('AuthService', () => {
 
     it('type check', () => {
       expect(typeof authService.validateLogin).toBe('function');
+    });
+
+    it('check called time', async () => {
+      await authService.validateLogin(loginDto);
+      expect(userService.findOne).toBeCalledTimes(1);
+      expect(bcrypt.compare).toBeCalledTimes(1);
+      expect(sessionService.create).toBeCalledTimes(1);
     });
   });
 
