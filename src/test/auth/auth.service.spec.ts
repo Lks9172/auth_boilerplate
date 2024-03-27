@@ -199,6 +199,21 @@ describe('AuthService', () => {
 
       expect(res).toStrictEqual(error422Pw);
     });
+
+    it('check return the correct value', async () => {
+      const returnValue = {
+        refreshToken: 'refreshToken',
+        token: 'jwtToken',
+        tokenExpires: 1711548649163,
+        user: user
+      };
+      let res = await authService.validateLogin(loginDto);
+      res = {
+        ...res,
+        tokenExpires: 1711548649163,
+      };
+      expect(res).toEqual(returnValue);
+    });
   });
 
   describe('register', () => {
