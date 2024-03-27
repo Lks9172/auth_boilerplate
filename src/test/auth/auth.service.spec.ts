@@ -146,7 +146,7 @@ describe('AuthService', () => {
     });
 
     it('check Can\'t find user with email', async () => {
-      const error_422 = new HttpException(
+      const error422Email = new HttpException(
         {
           status: HttpStatus.UNPROCESSABLE_ENTITY,
           errors: {
@@ -155,12 +155,31 @@ describe('AuthService', () => {
         },
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
-      
       jest.spyOn(userService, 'findOne').mockResolvedValue(null);
+      
       const res = await authService.validateLogin(loginDto)
       .catch((e) => e);
       
-      expect(res).toStrictEqual(error_422);
+      expect(res).toStrictEqual(error422Email);
+    });
+
+    it('check user\'s provider is not email', async () => {
+      const error422Provider = new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            email: `needLoginViaProvider:${user.provider}`,
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+      const t_user = {...user, provider: 'google'} as User;
+      jest.spyOn(userService, 'findOne').mockResolvedValue(t_user);
+      
+      const res = await authService.validateLogin(loginDto)
+      .catch((e) => e);
+
+      expect(res).toStrictEqual(error422Provider);
     });
   });
 
