@@ -11,6 +11,13 @@ import { MailService } from '../../mail/application/mail.service';
 import { MailerService } from '../../mailer/application/mailer.service';
 import mailConfig from '../../mail/config/mail.config';
 import MockUser from '../utils/mock-user';
+import bcrypt from 'bcryptjs';
+import MockSession from '../utils/mock-session';
+import { Session } from '../../session/entities/session.entity';
+
+jest.mock('bcryptjs', () => ({
+  compare: jest.fn(),
+}));
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -36,6 +43,7 @@ describe('AuthService', () => {
           provide: UserService,
           useValue: {
             create: jest.fn(), 
+            findOne: jest.fn()
           },
         },
         {
@@ -46,7 +54,9 @@ describe('AuthService', () => {
         },
         {
           provide: SessionService,
-          useValue: {},
+          useValue: {
+            create: jest.fn(),
+          },
         },
         {
           provide: JwtService,
@@ -86,6 +96,24 @@ describe('AuthService', () => {
     mailerService = module.get<MailerService>(MailerService);
     sessionService = module.get<SessionService>(SessionService);
     jwtService = module.get<JwtService>(JwtService);
+  });
+
+  describe('validateLogin', () => {
+    const user = new MockUser() as unknown as User;
+    const session = new MockSession() as unknown as Session;
+    
+    beforeEach(async () => {
+      bcrypt.compare = jest.fn().mockResolvedValue(true);
+      jest.spyOn(userService, 'findOne').mockResolvedValue(user);
+      jest.spyOn(sessionService, 'create').mockResolvedValue(session);
+      jest.spyOn(jwtService, 'signAsync').mockImplementation((payload, options) => {
+        if ('id' in payload) {
+          return Promise.resolve('jwtToken');
+        } else {
+          return Promise.resolve('refreshToken');
+        }
+      });
+    });
   });
 
   describe('register', () => {
