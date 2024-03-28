@@ -291,6 +291,12 @@ describe('AuthService', () => {
   describe('validateSocialLogin', () => {
     const user = new MockUser() as unknown as User;
     const session = new MockSession() as unknown as Session;
+    const socialData = {
+      id: '1',
+      firstName: 'ks',
+      lastName: 'Lee',
+      email: 'testemail@naver.com'
+    };
 
     beforeEach(async () => {
       jest.spyOn(userService, 'findOne').mockResolvedValue(user);
@@ -302,6 +308,10 @@ describe('AuthService', () => {
 
     it('should be defined', async () => {
       expect(authService.validateSocialLogin).toBeDefined();
+    });
+
+    it('type check', () => {
+      expect(typeof authService.validateSocialLogin).toBe('function');
     });
   });
 });
