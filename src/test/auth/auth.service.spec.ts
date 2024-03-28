@@ -44,7 +44,8 @@ describe('AuthService', () => {
           provide: UserService,
           useValue: {
             create: jest.fn(), 
-            findOne: jest.fn()
+            findOne: jest.fn(),
+            update: jest.fn()
           },
         },
         {
@@ -102,6 +103,7 @@ describe('AuthService', () => {
 
   describe('validateLogin', () => {
     const user = new MockUser() as unknown as User;
+
     const loginDto = {
       email: user.email as string,
       password: user.password
@@ -207,6 +209,7 @@ describe('AuthService', () => {
         tokenExpires: 1711548649163,
         user: user
       };
+
       let res = await authService.validateLogin(loginDto);
       res = {
         ...res,
@@ -282,6 +285,23 @@ describe('AuthService', () => {
     it('check return the correct value', async () => {
       const result = await authService.register(authRegisterLoginDto);
       expect(result).toEqual(undefined);
+    });
+  });
+
+  describe('validateSocialLogin', () => {
+    const user = new MockUser() as unknown as User;
+    const session = new MockSession() as unknown as Session;
+
+    beforeEach(async () => {
+      jest.spyOn(userService, 'findOne').mockResolvedValue(user);
+      jest.spyOn(userService, 'create').mockResolvedValue(new MockUser() as unknown as User);
+      jest.spyOn(userService, 'update').mockResolvedValue(new MockUser() as unknown as User);
+      jest.spyOn(sessionService, 'create').mockResolvedValue(session);
+      jest.spyOn(jwtService, 'signAsync').mockResolvedValue('testToken');
+    });
+
+    it('should be defined', async () => {
+      expect(authService.validateSocialLogin).toBeDefined();
     });
   });
 });
