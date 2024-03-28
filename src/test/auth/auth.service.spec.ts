@@ -15,12 +15,27 @@ import bcrypt from 'bcryptjs';
 import MockSession from '../utils/mock-session';
 import { Session } from '../../session/entities/session.entity';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { plainToClass } from 'class-transformer';
+import { RoleEnum } from '../../roles/roles.enum';
+import { Role } from '../../roles/entities/role.entity';
+import { Status } from '../../statuses/entities/status.entity';
+import { StatusEnum } from '../../statuses/statuses.enum';
 
 jest.mock('bcryptjs', () => ({
   compare: jest.fn(),
 }));
 
 describe('AuthService', () => {
+  const signOptions = {
+    payload: {
+      confirmEmailUserId: 1,
+    },
+    options: {
+      secret: 'Secret',
+      expiresIn: '1d',
+    },
+  };
+  
   let authService: AuthService;
   let userService: UserService;
   let mailService: MailService;
@@ -238,15 +253,6 @@ describe('AuthService', () => {
         id: 2,
       },
     };
-    const signOptions = {
-      payload: {
-        confirmEmailUserId: 1,
-      },
-      options: {
-        secret: 'Secret',
-        expiresIn: '1d',
-      },
-    };
 
     beforeEach(async () => {
       jest.spyOn(mailerService, 'sendMail').mockImplementation(() => Promise.resolve());
@@ -290,17 +296,29 @@ describe('AuthService', () => {
 
   describe('validateSocialLogin', () => {
     const user = new MockUser() as unknown as User;
+    const newSocialUser = {...user, email: 'testemail@naver.com', provider: 'kakao'} as User;
     const session = new MockSession() as unknown as Session;
     const socialData = {
       id: '1',
-      firstName: 'ks',
-      lastName: 'Lee',
+      firstName: 'John',
+      lastName: 'Doe',
       email: 'testemail@naver.com'
+    };
+    const genUserInfo ={
+      email: socialData.email ?? null,
+      firstName: socialData.firstName ?? null,
+      lastName: socialData.lastName ?? null,
+      socialId: socialData.id,
+      provider: 'kakao',
+      role:plainToClass(Role, {
+        id: RoleEnum.user,
+      }),
+      status: plainToClass(Status, {
+        id: StatusEnum.active,
+      }),
     };
 
     beforeEach(async () => {
-      jest.spyOn(userService, 'findOne').mockResolvedValue(user);
-      jest.spyOn(userService, 'create').mockResolvedValue(new MockUser() as unknown as User);
       jest.spyOn(userService, 'update').mockResolvedValue(new MockUser() as unknown as User);
       jest.spyOn(sessionService, 'create').mockResolvedValue(session);
       jest.spyOn(jwtService, 'signAsync').mockResolvedValue('testToken');
@@ -313,5 +331,27 @@ describe('AuthService', () => {
     it('type check', () => {
       expect(typeof authService.validateSocialLogin).toBe('function');
     });
+
+    it('called with parameter at login new user', async () => {
+      const userEmail = {
+        email: socialData.email
+      };
+      const userSocial = {
+        socialId: socialData.id,
+        provider: 'kakao'
+      };
+
+      jest.spyOn(userService, 'findOne').mockImplementation(() => {
+          return Promise.resolve(null);
+      });
+      jest.spyOn(userService, 'create').mockResolvedValue(newSocialUser as User);
+
+      await authService.validateSocialLogin('kakao', socialData);
+      expect(userService.findOne).toHaveBeenNthCalledWith(1, userEmail);
+      expect(userService.findOne).toHaveBeenNthCalledWith(2, userSocial);
+      expect(userService.create).toHaveBeenCalledWith(genUserInfo as User);
+      expect(sessionService.create).toHaveBeenCalledWith({user: newSocialUser as User});
+    });
+
   });
 });
