@@ -15,7 +15,7 @@ import bcrypt from 'bcryptjs';
 import ms from 'ms';
 import MockSession from '../utils/mock-session';
 import { Session } from '../../session/entities/session.entity';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { RoleEnum } from '../../roles/roles.enum';
 import { Role } from '../../roles/entities/role.entity';
@@ -78,6 +78,8 @@ describe('AuthService', () => {
           provide: SessionService,
           useValue: {
             create: jest.fn(),
+            findOne: jest.fn(),
+            softDelete: jest.fn()
           },
         },
         {
@@ -103,6 +105,9 @@ describe('AuthService', () => {
               if (key === 'auth.expires') return '30m';
               if (key === 'auth.forgotSecret') return 'secret_for_forgot_pw';
               if (key === 'auth.forgotExpires') return '30m';
+              if (key === 'auth.secret') return 'secret';
+              if (key === 'auth.refreshSecret') return 'refresh_secret';
+              if (key === 'auth.refreshExpires') return '30m';
             }),
           },
         },
@@ -445,7 +450,6 @@ describe('AuthService', () => {
         email: 'newemail@naver.com'
       });
       
-      console.log(mockSocialUser);
       expect(res).toEqual({
         refreshToken: 'testToken',
         token: 'testToken',
@@ -614,6 +618,75 @@ describe('AuthService', () => {
     });
   });
 
+  describe('refreshToken', () => {
+    const session = {
+      id: 10,
+      user: new MockUser() as unknown as User
+    } as Session;
+    const expiresIn = '30m';
+    const payload = {
+      id: session.user.id,
+      role: session.user.role,
+      sessionId: session.id,
+    };
+    const option =
+    {
+      secret: 'secret',
+      expiresIn: expiresIn
+    };
+    const option2 =
+    {
+      secret: 'refresh_secret',
+      expiresIn: expiresIn
+    };
+
+    beforeEach(async () => {
+      jest.clearAllMocks();
+      jest.spyOn(sessionService, 'findOne').mockReturnValue(Promise.resolve(session));
+      jest.spyOn(jwtService, 'signAsync').mockReturnValue(Promise.resolve('hash'));
+    });
+
+    it('should be defined', () => {
+      expect(authService.refreshToken).toBeDefined();
+    });
+
+    it('type check', () => {
+      expect(typeof authService.refreshToken).toBe('function');
+    });
+
+    it('check with parameter', async () => {
+      await authService.refreshToken({ sessionId: session.id });
+      expect(sessionService.findOne).toHaveBeenCalledWith({
+        where: {
+          id: session.id,
+        },
+      });
+      expect(jwtService.signAsync).toHaveBeenNthCalledWith(1, payload, option);
+      expect(jwtService.signAsync).toHaveBeenNthCalledWith(2, {sessionId: payload.sessionId}, option2);
+    });
+
+    it('check Error: email not exist', async () => {
+      jest.spyOn(sessionService, 'findOne').mockResolvedValue(null);
+      const error422 = new UnauthorizedException();
+      
+      const res = await authService.refreshToken({ sessionId: session.id })
+        .catch((e) => e);
+      
+      expect(res).toStrictEqual(error422);
+    });
+
+    it('check return the correct value.', async () => {
+      const returnValue = {
+        refreshToken: 'hash', 
+        token: 'hash', 
+        tokenExpires: Date.now() + ms('30m'),
+      };
+
+      const res = await authService.refreshToken({ sessionId: session.id });
+      expect(res).toEqual(returnValue);
+    });
+  });
+
   describe('softDelete', () => {
     const user = new MockUser() as unknown as User;
 
@@ -640,4 +713,87 @@ describe('AuthService', () => {
       expect(res).toEqual(undefined);
     });
   });
+
+
+
+
+  describe('resetPassword', () => {
+    const user = new MockUser() as unknown as User;
+    const parameter = { hash: 'hash', password: 'password'};
+    const option =
+    {
+      secret: 'secret_for_forgot_pw',
+    };
+    beforeEach(async () => {
+      jest.clearAllMocks();
+      jest.spyOn(jwtService, 'verifyAsync').mockReturnValue(Promise.resolve({forgotUserId: user.id}));
+      jest.spyOn(userService, 'findOne').mockReturnValue(Promise.resolve(user));
+      jest.spyOn(sessionService, 'softDelete').mockReturnValue(Promise.resolve());
+      jest.spyOn(userService, 'save').mockReturnValue(Promise.resolve(user));
+    });
+
+    it('should be defined', () => {
+      expect(authService.resetPassword).toBeDefined();
+    });
+
+    it('type check', () => {
+      expect(typeof authService.resetPassword).toBe('function');
+    });
+
+    it('check with parameter', async () => {
+      await authService.resetPassword(parameter.hash, parameter.password);
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith(parameter.hash, option);
+      expect(userService.findOne).toHaveBeenCalledWith({id: user.id});
+      expect(sessionService.softDelete).toHaveBeenCalledWith({
+        user: {
+          id: user.id,
+        }
+      });
+      expect(userService.save).toHaveBeenCalledWith(user);
+    });
+
+    it('check Error: userId not exist', async () => {
+      jest.spyOn(userService, 'findOne').mockResolvedValue(null);
+      const error422User = new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            hash: 'notFound',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+      
+      const res = await authService.resetPassword(parameter.hash, parameter.password)
+        .catch((e) => e);
+      
+      expect(res).toStrictEqual(error422User);
+    });
+
+    it('check Error: forgotpassword invalidHash', async () => {
+      jest.spyOn(jwtService, 'verifyAsync').mockImplementation(() => {
+        throw new Error('test_error'); 
+    });
+    const error422Hash = new HttpException(
+      {
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: {
+          hash: 'invalidHash',
+        },
+      },
+      HttpStatus.UNPROCESSABLE_ENTITY,
+    );
+      
+      const res = await authService.resetPassword(parameter.hash, parameter.password)
+        .catch((e) => e);
+      
+      expect(res).toStrictEqual(error422Hash);
+    });
+
+    it('check return the correct value.', async () => {
+      const res = await authService.resetPassword(parameter.hash, parameter.password);
+      expect(res).toEqual(undefined);
+    });
+  });
+
 });
