@@ -71,6 +71,7 @@ describe('AuthService', () => {
           provide: MailService,
           useValue: {
             userSignUp: jest.fn(),
+            forgotPassword: jest.fn()
           },
         },
         {
@@ -100,6 +101,8 @@ describe('AuthService', () => {
               if (key === 'auth.confirmEmailSecret') return 'Secret';
               if (key === 'auth.confirmEmailExpires') return '1d';
               if (key === 'auth.expires') return '30m';
+              if (key === 'auth.forgotSecret') return 'secret_for_forgot_pw';
+              if (key === 'auth.forgotExpires') return '30m';
             }),
           },
         },
@@ -545,6 +548,69 @@ describe('AuthService', () => {
       .catch((e) => e);
       
       expect(res).toStrictEqual(error422User);
+    });
+  });
+
+  describe('forgotPassword', () => {
+    const user = new MockUser() as unknown as User;
+    const email = user.email as string;
+
+    beforeEach(async () => {
+      jest.clearAllMocks();
+      jest.spyOn(userService, 'findOne').mockReturnValue(Promise.resolve(user));
+      jest.spyOn(jwtService, 'signAsync').mockReturnValue(Promise.resolve('hash'));
+      jest.spyOn(mailService, 'forgotPassword').mockReturnValue(Promise.resolve());
+    });
+
+    it('should be defined', () => {
+      expect(authService.forgotPassword).toBeDefined();
+    });
+
+    it('type check', () => {
+      expect(typeof authService.forgotPassword).toBe('function');
+    });
+
+    it('check with parameter', async () => {
+      const payload = {
+        forgotUserId: user.id,
+      };
+      const option =
+      {
+        secret: 'secret_for_forgot_pw',
+        expiresIn: '30m'
+      };
+      await authService.forgotPassword(email);
+      expect(userService.findOne).toHaveBeenCalledWith({email});
+      expect(jwtService.signAsync).toHaveBeenCalledWith(payload, option);
+      expect(mailService.forgotPassword).toHaveBeenCalledWith({
+        to: email,
+        data: {
+          hash: 'hash'
+        }
+      });
+    });
+
+    it('check Error: email not exist', async () => {
+      jest.spyOn(userService, 'findOne').mockResolvedValue(null);
+      const error422Email = new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            email: 'emailNotExists',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+      
+      const res = await authService.forgotPassword(email)
+        .catch((e) => e);
+      
+      expect(res).toStrictEqual(error422Email);
+    });
+
+    it('check return the correct value.', async () => {
+      const res = await authService.forgotPassword(email);
+      expect(res).toEqual(undefined);
     });
   });
 
