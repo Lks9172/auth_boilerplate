@@ -508,5 +508,25 @@ describe('AuthService', () => {
       const res = await authService.confirmEmail(hash);
       expect(res).toEqual(undefined);
     });
+
+    it('check inverify hash Error', async () => {
+      jest.spyOn(jwtService, 'verifyAsync').mockImplementation(() => {
+          throw new Error('test_error'); 
+      });
+      const error422Hash = new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            hash: 'invalidHash',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+      
+      const res = await authService.confirmEmail(hash)
+      .catch((e) => e);
+      
+      expect(res).toStrictEqual(error422Hash);
+    });
   });
 });
