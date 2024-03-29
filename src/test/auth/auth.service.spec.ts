@@ -64,6 +64,7 @@ describe('AuthService', () => {
             findOne: jest.fn(),
             update: jest.fn(),
             save: jest.fn(),
+            softDelete: jest.fn()
           },
         },
         {
@@ -133,7 +134,7 @@ describe('AuthService', () => {
       bcrypt.compare = jest.fn().mockResolvedValue(true);
       jest.spyOn(userService, 'findOne').mockResolvedValue(user);
       jest.spyOn(sessionService, 'create').mockResolvedValue(session);
-      jest.spyOn(jwtService, 'signAsync').mockImplementation((payload, options) => {
+      jest.spyOn(jwtService, 'signAsync').mockImplementation((payload) => {
         if ('id' in payload) {
           return Promise.resolve('jwtToken');
         } else {
@@ -544,6 +545,33 @@ describe('AuthService', () => {
       .catch((e) => e);
       
       expect(res).toStrictEqual(error422User);
+    });
+  });
+
+  describe('softDelete', () => {
+    const user = new MockUser() as unknown as User;
+
+    beforeEach(async () => {
+      jest.clearAllMocks();
+      jest.spyOn(userService, 'softDelete').mockReturnValue(Promise.resolve());
+    });
+
+    it('should be defined', () => {
+      expect(authService.softDelete).toBeDefined();
+    });
+
+    it('type check', () => {
+      expect(typeof authService.softDelete).toBe('function');
+    });
+
+    it('check with parameter', async () => {
+      await authService.softDelete(user);
+      expect(userService.softDelete).toHaveBeenCalledWith(user.id);
+    });
+
+    it('check return the correct value(undefined).', async () => {
+      const res = await authService.softDelete(user);
+      expect(res).toEqual(undefined);
     });
   });
 });
