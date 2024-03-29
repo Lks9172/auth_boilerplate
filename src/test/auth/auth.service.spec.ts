@@ -296,7 +296,9 @@ describe('AuthService', () => {
 
   describe('validateSocialLogin', () => {
     const user = new MockUser() as unknown as User;
-    const newSocialUser = {...user, email: 'testemail@naver.com', provider: 'kakao'} as User;
+    const newSocialUser = {...user, email: 'newemail@naver.com', provider: 'kakao'} as User;
+    const originUser = {...user, email: 'origin@naver.com', provider: 'kakao'} as User;
+
     const session = new MockSession() as unknown as Session;
     const socialData = {
       id: '1',
@@ -420,6 +422,24 @@ describe('AuthService', () => {
         tokenExpires: Date.now() + ms('30m'),
         user: newSocialUser as User,
       });     
+    });
+
+    it('check return value at origin social user changed social id', async () => {
+      jest.spyOn(userService, 'findOne').mockImplementation((fields) => {
+        if ('socialId' in fields)
+          return Promise.resolve(originUser);
+        else
+          return Promise.resolve(null);
+      });
+      jest.spyOn(userService, 'update').mockResolvedValue(newSocialUser as User);
+
+      const res = await authService.validateSocialLogin('kakao', {...socialData, email: 'newemail@naver.com'});
+      expect(res).toEqual({
+        refreshToken: 'testToken',
+        token: 'testToken',
+        tokenExpires: Date.now() + ms('30m'),
+        user: newSocialUser as User,
+      });
     });
 
     it('check error at login user different from record provider', async () => {
