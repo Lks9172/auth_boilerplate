@@ -528,5 +528,22 @@ describe('AuthService', () => {
       
       expect(res).toStrictEqual(error422Hash);
     });
+
+    it('check Error: active user data in jwt', async () => {
+      const activeUser = new MockUser() as unknown as User;
+      jest.spyOn(userService, 'findOne').mockResolvedValue(activeUser);
+      const error422User = new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'notFound',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+      
+      const res = await authService.confirmEmail(hash)
+      .catch((e) => e);
+      
+      expect(res).toStrictEqual(error422User);
+    });
   });
 });
