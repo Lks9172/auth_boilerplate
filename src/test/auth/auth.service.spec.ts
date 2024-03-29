@@ -10,7 +10,7 @@ import { SessionService } from '../../session/session.service';
 import { MailService } from '../../mail/application/mail.service';
 import { MailerService } from '../../mailer/application/mailer.service';
 import mailConfig from '../../mail/config/mail.config';
-import { MockUser, MockSocialUser } from '../utils/mock-user';
+import { MockUser, MockSocialUser, MockInActiveUser } from '../utils/mock-user';
 import bcrypt from 'bcryptjs';
 import ms from 'ms';
 import MockSession from '../utils/mock-session';
@@ -38,9 +38,6 @@ describe('AuthService', () => {
   };
   const mockDate = new Date(2024, 1, 1).getTime(); // 원하는 날짜로 설정
   jest.spyOn(Date, 'now').mockImplementation(() => mockDate);
-  jest.mock('../../user/domain/user.entity', () => ({
-    save: jest.fn(),
-  }));  
   let authService: AuthService;
   let userService: UserService;
   let mailService: MailService;
@@ -65,7 +62,8 @@ describe('AuthService', () => {
           useValue: {
             create: jest.fn(), 
             findOne: jest.fn(),
-            update: jest.fn()
+            update: jest.fn(),
+            save: jest.fn(),
           },
         },
         {
@@ -84,6 +82,7 @@ describe('AuthService', () => {
           provide: JwtService,
           useValue: {
             signAsync: jest.fn(),
+            verifyAsync: jest.fn()
           },
         },
         {
@@ -373,7 +372,7 @@ describe('AuthService', () => {
       expect(sessionService.create).toHaveBeenCalledWith({user: newSocialUser as User});
     });
 
-    it('check with paramete at origin social user changed social id', async () => {
+    it('check with parameter at origin social user changed social id', async () => {
       jest.spyOn(userService, 'findOne').mockImplementation((fields) => {
         if ('socialId' in fields)
           return Promise.resolve(newSocialUser);
@@ -475,11 +474,13 @@ describe('AuthService', () => {
   });
 
   describe('confirmEmail', () => {
-    const targetUser = new MockUser() as unknown as User;
+    const targetUser = new MockInActiveUser() as unknown as User;
+    const hash = 'hsahedstring';
+
     beforeEach(async () => {
       jest.spyOn(userService, 'findOne').mockImplementation(() => Promise.resolve(targetUser));
-      jest.spyOn(userService, 'create').mockResolvedValue(targetUser);
-      jest.spyOn(jwtService, 'signAsync').mockResolvedValue('testToken');
+      jest.spyOn(userService, 'save').mockResolvedValue(targetUser);
+      jest.spyOn(jwtService, 'verifyAsync').mockResolvedValue({ confirmEmailUserId: 1 });
     });
 
     it('should be defined', () => {
@@ -488,6 +489,15 @@ describe('AuthService', () => {
 
     it('type check', () => {
       expect(typeof authService.confirmEmail).toBe('function');
+    });
+
+    it('check with parameter', async () => {
+      await authService.confirmEmail(hash);
+      expect(userService.findOne).toHaveBeenCalledWith({id: targetUser.id});
+      expect(userService.save).toHaveBeenCalledWith(targetUser);
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith(hash, {
+        secret: 'Secret',
+      });
     });
   });
 });
