@@ -12,6 +12,7 @@ import { MailerService } from '../../mailer/application/mailer.service';
 import mailConfig from '../../mail/config/mail.config';
 import MockUser from '../utils/mock-user';
 import bcrypt from 'bcryptjs';
+import ms from 'ms';
 import MockSession from '../utils/mock-session';
 import { Session } from '../../session/entities/session.entity';
 import { HttpException, HttpStatus } from '@nestjs/common';
@@ -218,18 +219,16 @@ describe('AuthService', () => {
     });
 
     it('check return the correct value', async () => {
+      const mockDate = new Date(2024, 1, 1).getTime(); // 원하는 날짜로 설정
+      jest.spyOn(Date, 'now').mockImplementation(() => mockDate);
       const returnValue = {
         refreshToken: 'refreshToken',
         token: 'jwtToken',
-        tokenExpires: 1711548649163,
+        tokenExpires: Date.now() + ms('30m'),
         user: user
       };
-
-      let res = await authService.validateLogin(loginDto);
-      res = {
-        ...res,
-        tokenExpires: 1711548649163,
-      };
+      const res = await authService.validateLogin(loginDto);
+      
       expect(res).toEqual(returnValue);
     });
   });
@@ -352,7 +351,7 @@ describe('AuthService', () => {
       expect(sessionService.create).toHaveBeenCalledWith({user: newSocialUser as User});
     });
 
-    it('check called time at social login old user', async () => {
+    it('checkwith parameter at social login old user', async () => {
       jest.spyOn(userService, 'findOne').mockImplementation((fields) => {
         if ('email' in fields)
           return Promise.resolve(newSocialUser);
@@ -370,7 +369,7 @@ describe('AuthService', () => {
       expect(sessionService.create).toHaveBeenCalledWith({user: newSocialUser as User});
     });
 
-    it('check called time at origin social user changed social id', async () => {
+    it('check with paramete at origin social user changed social id', async () => {
       jest.spyOn(userService, 'findOne').mockImplementation((fields) => {
         if ('socialId' in fields)
           return Promise.resolve(newSocialUser);
@@ -386,7 +385,25 @@ describe('AuthService', () => {
       expect(sessionService.create).toHaveBeenCalledWith({user: newSocialUser as User});
     });
 
-    it('check called time at login user different from record provider', async () => {
+
+    it('check return value at login new user', async () => {
+      const mockDate = new Date(2024, 1, 1).getTime(); // 원하는 날짜로 설정
+      jest.spyOn(Date, 'now').mockImplementation(() => mockDate);
+      jest.spyOn(userService, 'findOne').mockImplementation(() => {
+          return Promise.resolve(null);
+      });
+      jest.spyOn(userService, 'create').mockResolvedValue(newSocialUser as User);
+
+      const res = await authService.validateSocialLogin('kakao', socialData);
+      expect(res).toEqual({
+        refreshToken: 'testToken',
+        token: 'testToken',
+        tokenExpires: Date.now() + ms('30m'),
+        user: newSocialUser as User,
+      });      
+    });
+
+    it('check error at login user different from record provider', async () => {
       jest.spyOn(userService, 'findOne').mockImplementation((fields) => {
         if ('email' in fields)
           return Promise.resolve(newSocialUser);
