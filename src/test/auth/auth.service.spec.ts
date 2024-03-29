@@ -485,5 +485,9 @@ describe('AuthService', () => {
     it('should be defined', () => {
       expect(authService.confirmEmail).toBeDefined();
     });
+
+    it('type check', () => {
+      expect(typeof authService.confirmEmail).toBe('function');
+    });
   });
 });
