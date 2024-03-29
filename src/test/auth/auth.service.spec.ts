@@ -370,5 +370,20 @@ describe('AuthService', () => {
       expect(sessionService.create).toHaveBeenCalledWith({user: newSocialUser as User});
     });
 
+    it('check called time at origin social user changed social id', async () => {
+      jest.spyOn(userService, 'findOne').mockImplementation((fields) => {
+        if ('socialId' in fields)
+          return Promise.resolve(newSocialUser);
+        else
+          return Promise.resolve(null);
+      });
+      jest.spyOn(userService, 'update').mockResolvedValue(newSocialUser as User);
+
+      await authService.validateSocialLogin('kakao', socialData);
+      expect(userService.findOne).toHaveBeenNthCalledWith(1, userEmail);
+      expect(userService.findOne).toHaveBeenNthCalledWith(2, userSocial);
+      expect(userService.update).toHaveBeenCalledWith(newSocialUser.id, newSocialUser);
+      expect(sessionService.create).toHaveBeenCalledWith({user: newSocialUser as User});
+    });
   });
 });
