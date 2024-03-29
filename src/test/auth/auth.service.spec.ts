@@ -10,7 +10,7 @@ import { SessionService } from '../../session/session.service';
 import { MailService } from '../../mail/application/mail.service';
 import { MailerService } from '../../mailer/application/mailer.service';
 import mailConfig from '../../mail/config/mail.config';
-import MockUser from '../utils/mock-user';
+import { MockUser, MockSocialUser } from '../utils/mock-user';
 import bcrypt from 'bcryptjs';
 import ms from 'ms';
 import MockSession from '../utils/mock-session';
@@ -37,9 +37,10 @@ describe('AuthService', () => {
     },
   };
   const mockDate = new Date(2024, 1, 1).getTime(); // 원하는 날짜로 설정
-      jest.spyOn(Date, 'now').mockImplementation(() => mockDate);
-      
-  
+  jest.spyOn(Date, 'now').mockImplementation(() => mockDate);
+  jest.mock('../../user/domain/user.entity', () => ({
+    save: jest.fn(),
+  }));  
   let authService: AuthService;
   let userService: UserService;
   let mailService: MailService;
@@ -297,8 +298,8 @@ describe('AuthService', () => {
   describe('validateSocialLogin', () => {
     const user = new MockUser() as unknown as User;
     const newSocialUser = {...user, email: 'newemail@naver.com', provider: 'kakao'} as User;
-    const originUser = {...user, email: 'origin@naver.com', provider: 'kakao'} as User;
-
+    const mockSocialUser = new MockSocialUser() as unknown as User;
+    const originUser = {...user, socialId:'1', email: 'origin@naver.com', provider: 'kakao'} as User;
     const session = new MockSession() as unknown as Session;
     const socialData = {
       id: '1',
@@ -426,19 +427,27 @@ describe('AuthService', () => {
 
     it('check return value at origin social user changed social id', async () => {
       jest.spyOn(userService, 'findOne').mockImplementation((fields) => {
-        if ('socialId' in fields)
+        if ('socialId' in fields){
           return Promise.resolve(originUser);
+        }
         else
           return Promise.resolve(null);
       });
-      jest.spyOn(userService, 'update').mockResolvedValue(newSocialUser as User);
+      jest.spyOn(userService, 'update').mockResolvedValue(mockSocialUser);
 
-      const res = await authService.validateSocialLogin('kakao', {...socialData, email: 'newemail@naver.com'});
+      const res = await authService.validateSocialLogin('kakao', {
+        id: '1',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'newemail@naver.com'
+      });
+      
+      console.log(mockSocialUser);
       expect(res).toEqual({
         refreshToken: 'testToken',
         token: 'testToken',
         tokenExpires: Date.now() + ms('30m'),
-        user: newSocialUser as User,
+        user: mockSocialUser as User,
       });
     });
 
@@ -462,6 +471,19 @@ describe('AuthService', () => {
       const res = await authService.validateSocialLogin('kakao', socialData)
         .catch(e => e);
       expect(res).toStrictEqual(error422Email);
+    });
+  });
+
+  describe('confirmEmail', () => {
+    const targetUser = new MockUser() as unknown as User;
+    beforeEach(async () => {
+      jest.spyOn(userService, 'findOne').mockImplementation(() => Promise.resolve(targetUser));
+      jest.spyOn(userService, 'create').mockResolvedValue(targetUser);
+      jest.spyOn(jwtService, 'signAsync').mockResolvedValue('testToken');
+    });
+
+    it('should be defined', () => {
+      expect(authService.confirmEmail).toBeDefined();
     });
   });
 });
