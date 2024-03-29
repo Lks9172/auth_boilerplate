@@ -714,9 +714,6 @@ describe('AuthService', () => {
     });
   });
 
-
-
-
   describe('resetPassword', () => {
     const user = new MockUser() as unknown as User;
     const parameter = { hash: 'hash', password: 'password'};
@@ -796,4 +793,37 @@ describe('AuthService', () => {
     });
   });
 
+  describe('findMe', () => {
+    const user = new MockUser() as unknown as User;
+    const now = Date.now();
+    const userJwtPayload= {
+      id: user.id,
+      role: user.role,
+      sessionId: 10,
+      iat: now - ms('30m'),
+      exp: now + ms('30m'),
+    };
+    beforeEach(async () => {
+      jest.clearAllMocks();
+      jest.spyOn(userService, 'findOne').mockReturnValue(Promise.resolve(user));
+    });
+
+    it('should be defined', () => {
+      expect(authService.findMe).toBeDefined();
+    });
+
+    it('type check', () => {
+      expect(typeof authService.findMe).toBe('function');
+    });
+
+    it('check with parameter', async () => {
+      await authService.findMe(userJwtPayload);
+      expect(userService.findOne).toHaveBeenCalledWith({id: userJwtPayload.id});
+    });
+
+    it('check return the correct value(undefined).', async () => {
+      const res = await authService.findMe(userJwtPayload);
+      expect(res).toEqual(user);
+    });
+  });
 });
