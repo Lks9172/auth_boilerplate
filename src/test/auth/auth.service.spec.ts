@@ -474,10 +474,12 @@ describe('AuthService', () => {
   });
 
   describe('confirmEmail', () => {
-    const targetUser = new MockInActiveUser() as unknown as User;
+    let targetUser;
     const hash = 'hsahedstring';
 
     beforeEach(async () => {
+      jest.clearAllMocks();
+      targetUser = new MockInActiveUser();
       jest.spyOn(userService, 'findOne').mockImplementation(() => Promise.resolve(targetUser));
       jest.spyOn(userService, 'save').mockResolvedValue(targetUser);
       jest.spyOn(jwtService, 'verifyAsync').mockResolvedValue({ confirmEmailUserId: 1 });
@@ -501,6 +503,8 @@ describe('AuthService', () => {
     });
 
     it('check return the correct value(undefined).', async () => {
+      jest.spyOn(userService, 'findOne').mockImplementation(() => Promise.resolve(targetUser));
+
       const res = await authService.confirmEmail(hash);
       expect(res).toEqual(undefined);
     });
