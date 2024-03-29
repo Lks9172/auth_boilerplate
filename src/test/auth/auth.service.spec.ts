@@ -499,5 +499,10 @@ describe('AuthService', () => {
         secret: 'Secret',
       });
     });
+
+    it('check return the correct value(undefined).', async () => {
+      const res = await authService.confirmEmail(hash);
+      expect(res).toEqual(undefined);
+    });
   });
 });
