@@ -385,5 +385,27 @@ describe('AuthService', () => {
       expect(userService.update).toHaveBeenCalledWith(newSocialUser.id, newSocialUser);
       expect(sessionService.create).toHaveBeenCalledWith({user: newSocialUser as User});
     });
+
+    it('check called time at login user different from record provider', async () => {
+      jest.spyOn(userService, 'findOne').mockImplementation((fields) => {
+        if ('email' in fields)
+          return Promise.resolve(newSocialUser);
+        else
+          return Promise.resolve(null);
+      });
+      const error422Email = new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            password: 'email already exists with a different provider.',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+
+      const res = await authService.validateSocialLogin('kakao', socialData)
+        .catch(e => e);
+      expect(res).toStrictEqual(error422Email);
+    });
   });
 });
