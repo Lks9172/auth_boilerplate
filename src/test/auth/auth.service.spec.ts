@@ -317,6 +317,13 @@ describe('AuthService', () => {
         id: StatusEnum.active,
       }),
     };
+    const userEmail = {
+      email: socialData.email
+    };
+    const userSocial = {
+      socialId: socialData.id,
+      provider: 'kakao'
+    };
 
     beforeEach(async () => {
       jest.spyOn(userService, 'update').mockResolvedValue(new MockUser() as unknown as User);
@@ -333,14 +340,6 @@ describe('AuthService', () => {
     });
 
     it('called with parameter at login new user', async () => {
-      const userEmail = {
-        email: socialData.email
-      };
-      const userSocial = {
-        socialId: socialData.id,
-        provider: 'kakao'
-      };
-
       jest.spyOn(userService, 'findOne').mockImplementation(() => {
           return Promise.resolve(null);
       });
@@ -350,6 +349,24 @@ describe('AuthService', () => {
       expect(userService.findOne).toHaveBeenNthCalledWith(1, userEmail);
       expect(userService.findOne).toHaveBeenNthCalledWith(2, userSocial);
       expect(userService.create).toHaveBeenCalledWith(genUserInfo as User);
+      expect(sessionService.create).toHaveBeenCalledWith({user: newSocialUser as User});
+    });
+
+    it('check called time at social login old user', async () => {
+      jest.spyOn(userService, 'findOne').mockImplementation((fields) => {
+        if ('email' in fields)
+          return Promise.resolve(newSocialUser);
+        else if ('socialId' in fields)
+          return Promise.resolve(newSocialUser);
+        else
+          return Promise.resolve(null);
+      });
+      jest.spyOn(userService, 'update').mockResolvedValue(newSocialUser as User);
+
+      await authService.validateSocialLogin('kakao', socialData);
+      expect(userService.findOne).toHaveBeenNthCalledWith(1, userEmail);
+      expect(userService.findOne).toHaveBeenNthCalledWith(2, userSocial);
+      expect(userService.update).toHaveBeenCalledWith(newSocialUser.id, newSocialUser);
       expect(sessionService.create).toHaveBeenCalledWith({user: newSocialUser as User});
     });
 
