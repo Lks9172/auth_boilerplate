@@ -111,11 +111,11 @@ export class AuthService {
       } as Status,
     });
 
-    const hash = await this.jwtService.signAsync(
-      {
+    const signOptions = {
+      payload: {
         confirmEmailUserId: user.id,
       },
-      {
+      options: {
         secret: this.configService.getOrThrow('auth.confirmEmailSecret', {
           infer: true,
         }),
@@ -123,7 +123,11 @@ export class AuthService {
           infer: true,
         }),
       },
-    );
+    };
+    const hash = await this.jwtService.signAsync(
+      signOptions.payload,
+      signOptions.options
+      );
 
     await this.mailService.userSignUp({
       to: dto.email,
@@ -156,6 +160,7 @@ export class AuthService {
 
     if (user) {
       if (socialEmail && !userByEmail) {
+      // 요기가 새로운 소셜 데이터 이메일 & old 소셜 유저
         user.email = socialEmail;
       }
       await this.userService.update(user.id, user);
@@ -186,10 +191,6 @@ export class AuthService {
         provider: authProvider,
         role,
         status,
-      });
-
-      user = await this.userService.findOne({
-        id: user.id,
       });
     }
 
@@ -269,9 +270,8 @@ export class AuthService {
     user.status = plainToClass(Status, {
       id: StatusEnum.active,
     });
-    await user.save();
+    await this.userService.save(user);
   }
-
 
   async forgotPassword(email: string): Promise<void> {
     const user = await this.userService.findOne({
@@ -390,9 +390,8 @@ export class AuthService {
         id: user.id,
       },
     });
-    await user.save();
+    await this.userService.save(user);
   }
-
 
   async findMe(userJwtPayload: JwtPayloadType): Promise<NullableType<User>> {
     return this.userService.findOne({
