@@ -5,6 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FileEntity } from '../../files/entities/file.entity';
 import { Readable } from 'stream';
 import { FileRepository } from '../../files/repository/files.repository';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 describe('AuthService', () => {
   let filesService: FilesService;
@@ -98,6 +99,22 @@ describe('AuthService', () => {
       expect(mockFileRepository.save).toHaveBeenCalledWith(fileEntity);
       expect(mockConfigService.get).toHaveBeenCalledWith('app.apiPrefix', { infer: true });
       expect(mockConfigService.getOrThrow).toHaveBeenCalledWith('file.driver', { infer: true });
+    });
+
+    it('check error: selectFile at File transfer error', async () => {
+      const error422File = new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            file: 'selectFile',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+
+      const res = await filesService.uploadFile(undefined as unknown as Express.Multer.File)
+        .catch(e => e);
+      expect(res).toStrictEqual(error422File);
     });
 
     it('check return the correct value', async () => {
