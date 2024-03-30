@@ -21,6 +21,7 @@ import { RoleEnum } from '../../roles/roles.enum';
 import { Role } from '../../roles/entities/role.entity';
 import { Status } from '../../statuses/entities/status.entity';
 import { StatusEnum } from '../../statuses/statuses.enum';
+import { AuthUpdateDto } from '../../auth/application/dto/auth-update.dto';
 
 jest.mock('bcryptjs', () => ({
   compare: jest.fn(),
@@ -796,7 +797,7 @@ describe('AuthService', () => {
   describe('findMe', () => {
     const user = new MockUser() as unknown as User;
     const now = Date.now();
-    const userJwtPayload= {
+    const userJwtPayload = {
       id: user.id,
       role: user.role,
       sessionId: 10,
@@ -823,6 +824,117 @@ describe('AuthService', () => {
 
     it('check return the correct value(undefined).', async () => {
       const res = await authService.findMe(userJwtPayload);
+      expect(res).toEqual(user);
+    });
+  });
+
+  describe('update', () => {
+    const user = new MockUser() as unknown as User;
+    const now = Date.now();
+    const userJwtPayload = {
+      id: user.id,
+      role: user.role,
+      sessionId: 10,
+      iat: now - ms('30m'),
+      exp: now + ms('30m'),
+    };
+    const userDto = {
+      photo: undefined,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      password: user.password,
+      oldPassword: 'hashedpassword'
+    } as AuthUpdateDto;
+
+    beforeEach(async () => {
+      jest.clearAllMocks();
+      jest.spyOn(userService, 'findOne').mockReturnValue(Promise.resolve(user));
+      jest.spyOn(sessionService, 'softDelete').mockReturnValue(Promise.resolve());
+      jest.spyOn(userService, 'update').mockReturnValue(Promise.resolve(user));
+      bcrypt.compare = jest.fn().mockResolvedValue(true);
+    });
+
+    it('should be defined', () => {
+      expect(authService.update).toBeDefined();
+    });
+
+    it('type check', () => {
+      expect(typeof authService.update).toBe('function');
+    });
+
+    it('check with parameter', async () => {
+      await authService.update(userJwtPayload, userDto);
+      expect(userService.findOne).toHaveBeenNthCalledWith(1, {id: userJwtPayload.id});
+      expect(bcrypt.compare).toHaveBeenCalledWith(userDto.oldPassword, user.password);
+      expect(sessionService.softDelete).toHaveBeenCalledWith({
+        user: {
+          id: user.id,
+        },
+        excludeId: userJwtPayload.sessionId,
+      });
+      expect(userService.update).toHaveBeenCalledWith(userJwtPayload.id, userDto);
+      expect(userService.findOne).toHaveBeenNthCalledWith(2, {
+        id: userJwtPayload.id,
+      });
+    });
+
+    it('check Error: missingOldPassword', async () => {
+      const errorUserDto = {...userDto, oldPassword: ''};
+      jest.spyOn(userService, 'findOne').mockResolvedValue(null);
+      const error422OldPw = new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            oldPassword: 'missingOldPassword',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+      
+      const res = await authService.update(userJwtPayload, errorUserDto)
+        .catch((e) => e);
+      
+      expect(res).toStrictEqual(error422OldPw);
+    });
+
+    it('check Error: userNotFound', async () => {
+      jest.spyOn(userService, 'findOne').mockResolvedValue(null);
+      const error422User = new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            user: 'userNotFound',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+      
+      const res = await authService.update(userJwtPayload, userDto)
+        .catch((e) => e);
+      
+      expect(res).toStrictEqual(error422User);
+    });
+
+    it('check Error: incorrectOldPassword', async () => {
+      bcrypt.compare = jest.fn().mockResolvedValue(false);
+      const error422Pw = new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            user: 'incorrectOldPassword',
+          },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+      
+      const res = await authService.update(userJwtPayload, userDto)
+        .catch((e) => e);
+      
+      expect(res).toStrictEqual(error422Pw);
+    });
+
+    it('check return the correct value(undefined).', async () => {
+      const res = await authService.update(userJwtPayload, userDto);
       expect(res).toEqual(user);
     });
   });
