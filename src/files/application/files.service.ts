@@ -1,16 +1,15 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FileEntity } from './entities/file.entity';
-import { Repository } from 'typeorm';
+import { FileEntity } from '../entities/file.entity';
 import { AllConfigType } from 'src/config/config.type';
+import { FileRepository } from '../repository/files.repository';
 
 @Injectable()
 export class FilesService {
   constructor(
     private readonly configService: ConfigService<AllConfigType>,
-    @InjectRepository(FileEntity)
-    private readonly fileRepository: Repository<FileEntity>,
+    private fileRepository: FileRepository, // User 엔티티의 Repository 주입
   ) {}
 
   async uploadFile(

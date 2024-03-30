@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Module } from '@nestjs/common';
-import { FilesController } from './files.controller';
+import { FilesController } from './presentation/files.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { diskStorage } from 'multer';
@@ -8,12 +8,15 @@ import { S3Client } from '@aws-sdk/client-s3';
 import multerS3 from 'multer-s3';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FileEntity } from './entities/file.entity';
-import { FilesService } from './files.service';
-import { AllConfigType } from 'src/config/config.type';
+import { FilesService } from './application/files.service';
+import { AllConfigType } from '../config/config.type';
+import { TypeOrmExModule } from '../database/typeorm-ex.module';
+import { FileRepository } from './repository/files.repository';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([FileEntity]),
+    TypeOrmExModule.forCustomRepository([FileRepository]),
     MulterModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
