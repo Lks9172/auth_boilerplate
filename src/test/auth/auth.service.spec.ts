@@ -938,4 +938,32 @@ describe('AuthService', () => {
       expect(res).toEqual(user);
     });
   });
+
+  describe('logout', () => {
+    const sessionId = 10;
+    beforeEach(async () => {
+      jest.clearAllMocks();
+      jest.spyOn(sessionService, 'softDelete').mockReturnValue(Promise.resolve());
+    });
+
+    it('should be defined', () => {
+      expect(authService.logout).toBeDefined();
+    });
+
+    it('type check', () => {
+      expect(typeof authService.logout).toBe('function');
+    });
+
+    it('check with parameter', async () => {
+      await authService.logout({ sessionId: sessionId });
+      expect(sessionService.softDelete).toHaveBeenCalledWith({
+          id: sessionId,
+        });
+    });
+
+    it('check return the correct value.', async () => {
+      const res = await authService.logout({ sessionId: sessionId });
+      expect(res).toEqual(res);
+    });
+  });
 });
