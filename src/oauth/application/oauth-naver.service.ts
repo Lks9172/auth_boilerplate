@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { SocialInterface } from '../../social/interfaces/social.interface';
 import { OAuthInterface } from '../interface/oauth.interface';
-import { OAuthGoogleLoginDto } from '../dto/oauth-google-login.dto';
+import { OAuthLoginDto } from '../dto/oauth-login.dto';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
@@ -23,7 +23,7 @@ export class OAuthNaverService implements OAuthInterface{
   }
 
   async getProfileByToken(
-    loginDto: OAuthGoogleLoginDto,
+    loginDto: OAuthLoginDto,
   ): Promise<SocialInterface> {
     this.setHeader(loginDto.idToken);
     const isValid = await this.verifyToken();

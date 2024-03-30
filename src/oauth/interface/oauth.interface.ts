@@ -1,9 +1,9 @@
 import { SocialInterface } from '../../social/interfaces/social.interface';
-import { OAuthGoogleLoginDto } from '../dto/oauth-google-login.dto';
+import { OAuthLoginDto } from '../dto/oauth-login.dto';
 
 export interface OAuthInterface
  {
     getProfileByToken(
-        loginDto: OAuthGoogleLoginDto,
+        loginDto: OAuthLoginDto,
       ): Promise<SocialInterface>;
 }

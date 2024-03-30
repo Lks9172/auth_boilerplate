@@ -4,7 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { SocialInterface } from '../../social/interfaces/social.interface';
 import { AllConfigType } from 'src/config/config.type';
 import { OAuthInterface } from '../interface/oauth.interface';
-import { OAuthGoogleLoginDto } from '../dto/oauth-google-login.dto';
+import { OAuthLoginDto } from '../dto/oauth-login.dto';
 
 @Injectable()
 export class OAuthGoogleService implements OAuthInterface{
@@ -18,7 +18,7 @@ export class OAuthGoogleService implements OAuthInterface{
   }
 
   async getProfileByToken(
-    loginDto: OAuthGoogleLoginDto,
+    loginDto: OAuthLoginDto,
   ): Promise<SocialInterface> {
     const ticket = await this.google.verifyIdToken({
       idToken: loginDto.idToken,

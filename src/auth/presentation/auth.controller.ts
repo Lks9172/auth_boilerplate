@@ -21,7 +21,7 @@ import { LoginResponseType } from '../types/login-response.type';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthForgotPasswordDto } from '../application/dto/auth-forgot-password.dto';
 import { AuthResetPasswordDto } from '../application/dto/auth-reset-password.dto';
-import { OAuthGoogleLoginDto } from '../../oauth/dto/oauth-google-login.dto';
+import { OAuthLoginDto } from '../../oauth/dto/oauth-login.dto';
 import { OAuthFactory } from '../../oauth/factories/oauth.factory';
 import { AuthProvidersEnum } from '../domain/auth-providers.enum';
 import { NullableType } from 'src/utils/types/nullable.type';
@@ -140,7 +140,7 @@ export class AuthController {
   @Post('social/login')
   @HttpCode(HttpStatus.OK)
   async socailLogin(
-    @Body() loginDto: OAuthGoogleLoginDto,
+    @Body() loginDto: OAuthLoginDto,
   ): Promise<LoginResponseType> {
     const provider: AuthProvidersEnum = AuthProvidersEnum[loginDto.social as keyof typeof AuthProvidersEnum];
     
