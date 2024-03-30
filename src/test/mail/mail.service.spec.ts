@@ -123,4 +123,81 @@ describe('AuthService', () => {
       expect(response).toEqual(undefined);
     });
   });
+
+  describe('forgotPassword', () => {
+    const mailData = {
+      to: 'test@example.com',
+      data: {
+        hash: 'testToken'
+      }
+    };
+    const emailConfirmTitle = 'Confirm email';
+    const resetPasswordTitle = 'Reset password';
+    const text1 = 'Trouble signing in?';
+    const text2 = 'Resetting your password is easy.';
+    const text3 = 'Just press the button below and follow the instructions. We’ll have you up and running in no time.';
+    const text4 = 'If you did not make this request then please ignore this email.';
+    const url = new URL(
+      'http://localhost:3000'+ '/password-change',
+    );
+    url.searchParams.set('hash', mailData.data.hash);
+    const mailerData = {
+      to: mailData.to,
+      subject: resetPasswordTitle,
+      text: `${url.toString()} ${emailConfirmTitle}`,
+      templatePath: path.join(
+        '/',
+        'src',
+        'mail',
+        'mail-templates',
+        'activation.hbs',
+      ),
+      context: {
+        title: resetPasswordTitle,
+        url: url.toString(),
+        actionTitle: resetPasswordTitle,
+        app_name: 'api',
+        text1,
+        text2,
+        text3,
+        text4,
+      },
+    };
+    it('should be defined', () => {
+      expect(mailService.forgotPassword).toBeDefined();
+    });
+
+    it('type check', () => {
+      expect(typeof mailService.forgotPassword).toBe('function');
+    });
+
+    it('check called time', async () => {
+      await mailService.forgotPassword(mailData);
+
+      expect(mailerService.sendMail).toBeCalledTimes(1);
+      expect(mockConfigService.get).toBeCalledTimes(1);
+      expect(mockConfigService.getOrThrow).toBeCalledTimes(2);
+    });
+
+    it('check called with parameter', async () => {
+      await mailService.forgotPassword(mailData);
+
+      expect(mailerService.sendMail).toHaveBeenCalledWith(mailerData);
+      expect(mockConfigService.get).toHaveBeenCalledWith('app.name', {
+        infer: true,
+      });
+      expect(mockConfigService.getOrThrow).toHaveBeenNthCalledWith(1, 'app.frontendDomain', {
+        infer: true,
+      });
+      expect(mockConfigService.getOrThrow).toHaveBeenNthCalledWith(2, 'app.workingDirectory', {
+        infer: true,
+      });
+    });
+
+    it('check return the correct value', async () => {
+      const response = await mailService.forgotPassword(mailData);
+
+      expect(response).toEqual(undefined);
+    });
+  });
 });
