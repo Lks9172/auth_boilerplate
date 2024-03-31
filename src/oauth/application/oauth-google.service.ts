@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 import { SocialInterface } from '../../social/interfaces/social.interface';
@@ -8,15 +8,11 @@ import { OAuthLoginDto } from '../dto/oauth-login.dto';
 
 @Injectable()
 export class OAuthGoogleService implements OAuthInterface{
-  private google: OAuth2Client;
-
-  constructor(private configService: ConfigService<AllConfigType>) {
-    this.google = new OAuth2Client(
-      configService.get('google.clientId', { infer: true }),
-      configService.get('google.clientSecret', { infer: true }),
-    );
-  }
-
+  constructor(
+    @Inject('GOOGLE_OAUTH2_CLIENT') private google: OAuth2Client,
+    private configService: ConfigService<AllConfigType>,
+    ) {}
+    
   async getProfileByToken(
     loginDto: OAuthLoginDto,
   ): Promise<SocialInterface> {

@@ -9,7 +9,6 @@ import { AllConfigType } from '../../config/config.type';
 
 @Injectable()
 export class OAuthNaverService implements OAuthInterface{
-  private httpService= new HttpService();
   private userInfoUrl: string;
   private header = {
     headers: {
@@ -18,7 +17,10 @@ export class OAuthNaverService implements OAuthInterface{
     },
   };
 
-  constructor(private configService: ConfigService<AllConfigType>) {
+  constructor(
+    private configService: ConfigService<AllConfigType>,
+    private httpService: HttpService
+    ) {
     this.userInfoUrl = configService.get('naver.userInfoUrl', { infer: true }) as string;  
   }
 

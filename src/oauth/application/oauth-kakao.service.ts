@@ -9,7 +9,6 @@ import { AllConfigType } from '../../config/config.type';
 
 @Injectable()
 export class OAuthKakaoService implements OAuthInterface{
-  private httpService= new HttpService();
   private userInfoUrl: string;
   private verifyTokenUrl: string;
   private header = {
@@ -19,7 +18,10 @@ export class OAuthKakaoService implements OAuthInterface{
     },
   };
 
-  constructor(private configService: ConfigService<AllConfigType>) {
+  constructor(
+    private configService: ConfigService<AllConfigType>,
+    private httpService: HttpService
+    ) {
     this.userInfoUrl = configService.get('kakao.userInfoUrl', { infer: true }) as string;
     this.verifyTokenUrl = configService.get('kakao.verifyTokenUrl', { infer: true }) as string;
   }
