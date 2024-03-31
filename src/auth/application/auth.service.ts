@@ -13,7 +13,7 @@ import bcrypt from 'bcryptjs';
 import ms from 'ms';
 import { AuthProvidersEnum } from '../domain/auth-providers.enum';
 import { Session } from '../../session/entities/session.entity';
-import { SessionService } from '../../session/session.service';
+import { SessionService } from '../../session/application/session.service';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import { LoginResponseType } from '../types/login-response.type';
 import { JwtRefreshPayloadType } from '../types/jwt-refresh-payload.type';

@@ -149,5 +149,4 @@ export class AuthController {
 
     return this.service.validateSocialLogin(loginDto.social, socialData);
   }
-
 }
