@@ -1,47 +1,37 @@
 version: '3.8'
 
-networks:
-    mynetwork:
-
 services:
-    mysql: # See Also: https://hub.docker.com/_/mysql
-        container_name: mysql
+    mysql:
         image: mysql:8.0
-        hostname: hostname-mysql
-        command: --default-authentication-plugin=mysql_native_password
-        restart: always
-        environment:
-            MYSQL_DATABASE: auth
-            MYSQL_ROOT_PASSWORD: root
-            TZ: Asia/Seoul
-        expose:
-            - 3306
+        volumes:
+            - boilerplate-db:/var/lib/mysql
         ports:
-            - 3306:3306/tcp
-        networks:
-            - mynetwork
+            - ${DATABASE_PORT}:3306
+        environment:
+            MYSQL_USER: ${DATABASE_USERNAME}
+            MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+            MYSQL_DATABASE: ${DATABASE_NAME}
+            MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+            TZ: Asia/Seoul
 
     app:
-        container_name: app
         build:
             context: .
             dockerfile: ./Dockerfile
-        environment:
-            MYSQL_HOST: mysql
-        expose:
-            - 3000
-        volumes:
-            - ./:/app/
-        depends_on:
-            - mysql
-        networks:
-            - mynetwork
-        command:
-            - sh 
-            - ./script/on-start.sh
         ports:
-            - 3000:3000
+            - ${APP_PORT}:${APP_PORT}
+        # healthcheck:
+        #     test: ["CMD", "curl", "-f", "http://app:3000/docs"]
+        #     interval: 10s
+        #     timeout: 5s
+        #     retries: 3
+        #     start_period: 10s
 
+    # redis:
+    #     image: redis:alpine
+    #     ports:
+    #     - 6379:6379
+    
     nginx:
         image: nginx:latest
         container_name: nginx
@@ -49,7 +39,8 @@ services:
         ports:
             - 80:80
         restart: 'always'
-        networks:
-            - mynetwork
         depends_on:
             - app
+
+volumes:
+  boilerplate-db:
