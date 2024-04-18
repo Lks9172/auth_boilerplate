@@ -1,22 +1,32 @@
-FROM node:20.10.0-alpine
+# Build stage
+FROM node:20.10.0-alpine as builder
 
-RUN apk add --no-cache bash
 RUN npm i -g @nestjs/cli typescript ts-node
 
-COPY package*.json /tmp/app/
-RUN cd /tmp/app && npm install
-
-COPY . /usr/src/app
-RUN cp -a /tmp/app/node_modules /usr/src/app
-COPY ./bash`/wait-for-it.sh /opt/wait-for-it.sh
-RUN chmod +x /opt/wait-for-it.sh
-COPY ./bash/startup.dev.sh /opt/startup.dev.sh
-RUN chmod +x /opt/startup.dev.sh
-RUN sed -i 's/\r//g' /opt/wait-for-it.sh
-RUN sed -i 's/\r//g' /opt/startup.dev.sh
+WORKDIR /tmp/app
+COPY package*.json ./
+RUN npm install
 
 WORKDIR /usr/src/app
-RUN if [ ! -f .env ]; then cp .env .env; fi
+COPY . .
+RUN cp -a /tmp/app/node_modules .
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
 RUN npm run build
+
+# Run stage
+FROM node:20.10.0-alpine
+
+RUN apk add --no-cache bash curl
+
+WORKDIR /usr/src/app
+
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/package*.json ./
+COPY --from=builder /usr/src/app/.env ./
+COPY --from=builder /usr/src/app/bash/wait-for-it.sh /opt/wait-for-it.sh
+COPY --from=builder /usr/src/app/bash/startup.dev.sh /opt/startup.dev.sh
+
+RUN chmod +x /opt/wait-for-it.sh /opt/startup.dev.sh
 
 CMD ["/opt/startup.dev.sh"]
