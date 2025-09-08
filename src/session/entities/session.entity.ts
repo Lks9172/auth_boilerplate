@@ -7,18 +7,18 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 import { EntityHelper } from '../../utils/entity-helper';
-import { User } from '../../user/domain/user.entity';
+import { UserEntity } from '../../user/infrastructure/entities/user.entity';
 
 @Entity()
 export class Session extends EntityHelper {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, {
+  @ManyToOne(() => UserEntity, {
     eager: true,
   })
   @Index()
-  user: User;
+  user: UserEntity;
 
   @CreateDateColumn()
   createdAt: Date;

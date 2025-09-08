@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DeepPartial, FindOneOptions, Not} from 'typeorm';
 import { Session } from '../entities/session.entity';
 import { SessionRepository } from '../repository/session.repository';
-import { User } from '../../user/domain/user.entity';
+import { UserEntity } from '../../user/infrastructure/entities/user.entity';
 import { NullableType } from 'src/utils/types/nullable.type';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class SessionService {
     ...criteria
   }: {
     id?: Session['id'];
-    user?: Pick<User, 'id'>;
+    user?: Pick<UserEntity, 'id'>;
     excludeId?: Session['id'];
   }): Promise<void> {
     const idCondition = criteria.id ? { id: criteria.id } : excludeId ? { id: Not(excludeId) } : {};
