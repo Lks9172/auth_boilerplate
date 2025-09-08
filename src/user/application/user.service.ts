@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from '../domain/user.entity';
+import { UserEntity } from '../infrastructure/entities/user.entity';
 import { UserRepository } from '../repository/user.repository';
 import { EntityCondition } from '../../utils/types/entity-condition.type';
 import { NullableType } from '../../utils/types/nullable.type';
@@ -13,23 +13,23 @@ export class UserService {
   ) {}
 
   /**user생성 메서드 */
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<UserEntity> {
     return await this.userRepository.save(
       this.userRepository.create(createUserDto),
     );
   }
 
-  async getUser(): Promise<User[] | null>  {
+  async getUser(): Promise<UserEntity[] | null>  {
     return await this.userRepository.findAllUser();
   }
 
-  findOne(fields: EntityCondition<User>): Promise<NullableType<User>> {
+  findOne(fields: EntityCondition<UserEntity>): Promise<NullableType<UserEntity>> {
     return this.userRepository.findOne({
       where: fields,
     });
   }
 
-  update(id: User['id'], payload: DeepPartial<User>): Promise<User> {
+  update(id: UserEntity['id'], payload: DeepPartial<UserEntity>): Promise<UserEntity> {
     return this.userRepository.save(
       this.userRepository.create({
         id,
@@ -38,11 +38,11 @@ export class UserService {
     );
   }
 
-  async softDelete(id: User['id']): Promise<void> {
+  async softDelete(id: UserEntity['id']): Promise<void> {
     await this.userRepository.softDelete(id);
   }
 
-  async save(user: User): Promise<User> {
+  async save(user: UserEntity): Promise<UserEntity> {
     return await this.userRepository.save(user);
   }
 }

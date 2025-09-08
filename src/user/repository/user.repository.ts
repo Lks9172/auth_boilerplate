@@ -1,15 +1,15 @@
 import { Repository } from 'typeorm';
-import { User } from '../domain/user.entity'; // 엔티티 경로 확인
+import { UserEntity } from '../infrastructure/entities/user.entity'; // 엔티티 경로 확인
 import { CustomRepository } from '../../database/typeorm-ex.decorator';
 
-@CustomRepository(User)
-export class UserRepository extends Repository<User>{
+@CustomRepository(UserEntity)
+export class UserRepository extends Repository<UserEntity>{
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<UserEntity | null> {
     return await this.findOneBy({ email });
   }
 
-  async findAllUser(): Promise<Promise<User[] | null> > {
+  async findAllUser(): Promise<UserEntity[] | null> {
     return await this.find();
   }
 

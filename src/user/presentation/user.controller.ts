@@ -12,7 +12,7 @@ import {
   SerializeOptions,
   UseGuards,
 } from '@nestjs/common';
-import { User } from '../domain/user.entity';
+import { UserEntity } from '../infrastructure/entities/user.entity';
 import { CreateUserDto } from '../application/dto/create-user.dto';
 import { UserService } from '../application/user.service';
 import { RolesGuard } from '../../roles/roles.guard';
@@ -22,11 +22,12 @@ import { UpdateUserDto } from '../application/dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../../roles/roles.decorator';
 import { RoleEnum } from '../../roles/roles.enum';
+import { HybridAccessGuard } from '../../permissions/guards/hybrid-access.guard';
+import { Permissions, CanReadUsers, CanWriteUsers, CanDeleteUsers } from '../../permissions/decorators/permissions.decorator';
 
 @ApiBearerAuth()
-@Roles(RoleEnum.admin)
 @ApiTags('User')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(AuthGuard('jwt'), HybridAccessGuard)
 @Controller({
   path: 'user',
   version: '1',
@@ -39,7 +40,9 @@ export class UserController {
   })
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createProfileDto: CreateUserDto): Promise<User> {
+  @Roles(RoleEnum.admin) // Admin 역할 또는
+  @Permissions('users:create') // 사용자 생성 권한이 있어야 함
+  create(@Body() createProfileDto: CreateUserDto): Promise<UserEntity> {
     return this.userService.create(createProfileDto);
   }
 
@@ -47,7 +50,8 @@ export class UserController {
     groups: ['admin'],
   })
   @Get('/')
-  async hello(): Promise<User[]|null> {
+  @CanReadUsers() // 사용자 읽기 권한 체크
+  async hello(): Promise<UserEntity[]|null> {
     return await this.userService.getUser();
   }
 
@@ -56,7 +60,8 @@ export class UserController {
   })
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<NullableType<User>> {
+  @CanReadUsers() // 사용자 읽기 권한 체크
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<NullableType<UserEntity>> {
     return this.userService.findOne({ id: id });
   }
 
@@ -65,15 +70,17 @@ export class UserController {
   })
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
+  @CanWriteUsers() // 사용자 수정 권한 체크
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProfileDto: UpdateUserDto,
-  ): Promise<User> {
+  ): Promise<UserEntity> {
     return this.userService.update(id, updateProfileDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @CanDeleteUsers() // 사용자 삭제 권한 체크
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.userService.softDelete(id);
   }
