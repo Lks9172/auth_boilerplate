@@ -1,13 +1,13 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, UnauthorizedException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
-import { UserService } from '../../user/application/user.service';
+import { UserServicePort, USER_SERVICE } from '../../user/domain/ports/user.service.port';
 import { ConfigService } from '@nestjs/config';
 import { Status } from '../../statuses/entities/status.entity';
 import { StatusEnum } from '../../statuses/statuses.enum';
 import { AllConfigType } from '../../config/config.type';
 import { MailService } from '../../mail/application/mail.service';
-import { User } from '../../user/domain/user.entity';
+import { UserEntity } from '../../user/infrastructure/entities/user.entity';
 import { plainToClass } from 'class-transformer';
 import bcrypt from 'bcryptjs';
 import ms from 'ms';
@@ -19,6 +19,9 @@ import { LoginResponseType } from '../types/login-response.type';
 import { JwtRefreshPayloadType } from '../types/jwt-refresh-payload.type';
 import { SocialInterface } from '../../social/interfaces/social.interface';
 import { NullableType } from '../../utils/types/nullable.type';
+
+// Use UserEntity instead of domain User
+type User = UserEntity;
 import { Role } from '../../roles/entities/role.entity';
 import { RoleEnum } from '../../roles/roles.enum';
 import { JwtPayloadType } from '../strategies/types/jwt-payload.type';
@@ -28,16 +31,15 @@ import { AuthUpdateDto } from './dto/auth-update.dto';
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    private userService: UserService,
+    @Inject(USER_SERVICE)
+    private userService: UserServicePort,
     private sessionService: SessionService,
     private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
   ) {}
 
   async validateLogin(loginDto: AuthEmailLoginDto): Promise<LoginResponseType> {
-    const user = await this.userService.findOne({
-      email: loginDto.email,
-    });
+    const user = await this.userService.findByEmail(loginDto.email);
 
     if (!user) {
       throw new HttpException(
@@ -65,7 +67,7 @@ export class AuthService {
 
     const isValidPassword = await bcrypt.compare(
       loginDto.password,
-      user.password,
+      user.password || '',
     );
 
     if (!isValidPassword) {
@@ -85,8 +87,8 @@ export class AuthService {
     });
 
     const { token, refreshToken, tokenExpires } = await this.getTokensData({
-      id: user.id,
-      role: user.role,
+      id: user.id as number,
+      role: user.role || null,
       sessionId: session.id,
     });
 
@@ -103,17 +105,14 @@ export class AuthService {
     const user = await this.userService.create({
       ...dto,
       email: dto.email,
-      role: {
-        id: RoleEnum.user,
-      } as Role,
-      status: {
-        id: StatusEnum.inactive,
-      } as Status,
+      provider: AuthProvidersEnum.email,
+      statusId: StatusEnum.inactive,
+      roleIds: [RoleEnum.user],
     });
 
     const signOptions = {
       payload: {
-        confirmEmailUserId: user.id,
+        confirmEmailUserId: user.id as number,
       },
       options: {
         secret: this.configService.getOrThrow('auth.confirmEmailSecret', {
@@ -146,16 +145,11 @@ export class AuthService {
     let userByEmail: NullableType<User> = null;
 
     if (socialEmail) {
-      userByEmail = await this.userService.findOne({
-        email: socialEmail,
-      });
+      userByEmail = await this.userService.findByEmail(socialEmail);
     }
 
     if (socialData.id) {
-      user = await this.userService.findOne({
-        socialId: socialData.id,
-        provider: authProvider,
-      });
+      user = await this.userService.findBySocialId(socialData.id);
     }
 
     if (user) {
@@ -163,7 +157,11 @@ export class AuthService {
       // 요기가 새로운 소셜 데이터 이메일 & old 소셜 유저
         user.email = socialEmail;
       }
-      await this.userService.update(user.id, user);
+      await this.userService.update(user.id as number, {
+        email: user.email || undefined,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+      });
     } else if (userByEmail) {
       throw new HttpException(
         {
@@ -184,13 +182,13 @@ export class AuthService {
       });
 
       user = await this.userService.create({
-        email: socialEmail ?? null,
-        firstName: socialData.firstName ?? null,
-        lastName: socialData.lastName ?? null,
+        email: socialEmail ?? undefined,
+        firstName: socialData.firstName ?? undefined,
+        lastName: socialData.lastName ?? undefined,
         socialId: socialData.id,
         provider: authProvider,
-        role,
-        status,
+        statusId: StatusEnum.active,
+        roleIds: [RoleEnum.user],
       });
     }
 
@@ -215,8 +213,8 @@ export class AuthService {
       refreshToken,
       tokenExpires,
     } = await this.getTokensData({
-      id: user.id,
-      role: user.role,
+      id: user.id as number,
+      role: user.role || null,
       sessionId: session.id,
     });
 
@@ -253,9 +251,7 @@ export class AuthService {
       );
     }
 
-    const user = await this.userService.findOne({
-      id: userId,
-    });
+    const user = await this.userService.findById(userId);
 
     if (!user || user?.status?.id !== StatusEnum.inactive) {
       throw new HttpException(
@@ -267,16 +263,14 @@ export class AuthService {
       );
     }
 
-    user.status = plainToClass(Status, {
-      id: StatusEnum.active,
+    // Status will be updated via userService.update
+    await this.userService.update(user.id as number, {
+      statusId: StatusEnum.active,
     });
-    await this.userService.save(user);
   }
 
   async forgotPassword(email: string): Promise<void> {
-    const user = await this.userService.findOne({
-      email,
-    });
+    const user = await this.userService.findByEmail(email);
 
     if (!user) {
       throw new HttpException(
@@ -292,7 +286,7 @@ export class AuthService {
 
     const hash = await this.jwtService.signAsync(
       {
-        forgotUserId: user.id,
+        forgotUserId: user.id as number,
       },
       {
         secret: this.configService.getOrThrow('auth.forgotSecret', {
@@ -339,7 +333,7 @@ export class AuthService {
   }
 
   async softDelete(user: User): Promise<void> {
-    await this.userService.softDelete(user.id);
+    await this.userService.delete(user.id as number);
   }
 
   async resetPassword(hash: string, password: string): Promise<void> {
@@ -367,9 +361,7 @@ export class AuthService {
       );
     }
 
-    const user = await this.userService.findOne({
-      id: userId,
-    });
+    const user = await this.userService.findById(userId);
 
     if (!user) {
       throw new HttpException(
@@ -383,20 +375,18 @@ export class AuthService {
       );
     }
 
-    user.password = password;
-
     await this.sessionService.softDelete({
       user: {
-        id: user.id,
+        id: user.id as number,
       },
     });
-    await this.userService.save(user);
+    await this.userService.update(user.id as number, {
+      password: password,
+    });
   }
 
   async findMe(userJwtPayload: JwtPayloadType): Promise<NullableType<User>> {
-    return this.userService.findOne({
-      id: userJwtPayload.id,
-    });
+    return this.userService.findById(userJwtPayload.id);
   }
 
   async update(
@@ -416,9 +406,7 @@ export class AuthService {
         );
       }
 
-      const currentUser = await this.userService.findOne({
-        id: userJwtPayload.id,
-      });
+      const currentUser = await this.userService.findById(userJwtPayload.id);
 
       if (!currentUser) {
         throw new HttpException(
@@ -434,7 +422,7 @@ export class AuthService {
 
       const isValidOldPassword = await bcrypt.compare(
         userDto.oldPassword,
-        currentUser.password,
+        currentUser.password || '',
       );
 
       if (!isValidOldPassword) {
@@ -459,9 +447,7 @@ export class AuthService {
 
     await this.userService.update(userJwtPayload.id, userDto);
 
-    return this.userService.findOne({
-      id: userJwtPayload.id,
-    });
+    return this.userService.findById(userJwtPayload.id);
   }
 
   private async getTokensData(data: {
@@ -473,7 +459,7 @@ export class AuthService {
       infer: true,
     });
 
-    const tokenExpires = Date.now() + ms(tokenExpiresIn);
+    const tokenExpires = Date.now() + (ms as any)(tokenExpiresIn);
 
     const [token, refreshToken] = await Promise.all([
       await this.jwtService.signAsync(

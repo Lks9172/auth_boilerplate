@@ -25,7 +25,7 @@ import { OAuthLoginDto } from '../../oauth/dto/oauth-login.dto';
 import { OAuthFactory } from '../../oauth/factories/oauth.factory';
 import { AuthProvidersEnum } from '../domain/auth-providers.enum';
 import { NullableType } from 'src/utils/types/nullable.type';
-import { User } from 'src/user/domain/user.entity';
+import { UserEntity } from 'src/user/infrastructure/entities/user.entity';
 import { AuthUpdateDto } from '../application/dto/auth-update.dto';
 
 @ApiTags('Auth')
@@ -85,7 +85,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
-  public findMe(@Request() request): Promise<NullableType<User>> {
+  public findMe(@Request() request): Promise<NullableType<UserEntity>> {
     return this.service.findMe(request.user);
   }
 
@@ -122,7 +122,7 @@ export class AuthController {
   public update(
     @Request() request,
     @Body() userDto: AuthUpdateDto,
-  ): Promise<NullableType<User>> {
+  ): Promise<NullableType<UserEntity>> {
     return this.service.update(request.user, userDto);
   }
 

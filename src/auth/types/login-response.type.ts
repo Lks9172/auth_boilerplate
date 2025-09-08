@@ -1,8 +1,8 @@
-import { User } from '../../user/domain/user.entity';
+import { UserEntity } from '../../user/infrastructure/entities/user.entity';
 
 export type LoginResponseType = Readonly<{
   token: string;
   refreshToken: string;
   tokenExpires: number;
-  user: User;
+  user: UserEntity;
 }>;
